@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -12,7 +12,6 @@
 // -----------------------------------------------------------------------------
 
 using Fur.DependencyInjection;
-using Fur.FriendlyException;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,9 +32,14 @@ namespace Fur.DatabaseAccessor
     public class SqlDispatchProxy : DispatchProxy, IDispatchProxy
     {
         /// <summary>
+        /// 实例对象
+        /// </summary>
+        public object Target { get; set; }
+
+        /// <summary>
         /// 服务提供器
         /// </summary>
-        public IServiceProvider ServiceProvider { get; set; }
+        public IServiceProvider Services { get; set; }
 
         /// <summary>
         /// 拦截
@@ -174,7 +178,7 @@ namespace Fur.DatabaseAccessor
         private SqlProxyMethod GetProxyMethod(MethodInfo method, object[] args)
         {
             // 判断方法是否贴了注解
-            if (!method.IsDefined(typeof(SqlProxyAttribute), true)) throw Oops.Oh("The method is missing the [SqlProxy] annotation", typeof(InvalidOperationException));
+            if (!method.IsDefined(typeof(SqlProxyAttribute), true)) throw new InvalidOperationException("The method is missing the [SqlProxy] annotation");
 
             // 获取 Sql 代理特性
             var sqlProxyAttribute = method.GetCustomAttribute<SqlProxyAttribute>(true);
@@ -216,7 +220,7 @@ namespace Fur.DatabaseAccessor
                 finalSql = sqlExecuteAttribute.Sql;
                 commandType = sqlExecuteAttribute.CommandType;
             }
-            else throw Oops.Oh($"{sqlProxyAttribute.GetType().FullName} is an invalid annotation", typeof(NotSupportedException));
+            else throw new NotSupportedException($"{sqlProxyAttribute.GetType().FullName} is an invalid annotation");
 
             // 返回
             return new SqlProxyMethod
@@ -238,8 +242,8 @@ namespace Fur.DatabaseAccessor
         private DbContext GetDbContext(Type dbContextLocator = null)
         {
             // 解析数据库上下文池和数据库上下文解析器
-            var dbContextPool = ServiceProvider.GetService<IDbContextPool>();
-            var dbContextResolver = ServiceProvider.GetService<Func<Type, IScoped, DbContext>>();
+            var dbContextPool = Services.GetService<IDbContextPool>();
+            var dbContextResolver = Services.GetService<Func<Type, IScoped, DbContext>>();
 
             // 解析数据库上下文
             var dbContext = dbContextResolver(dbContextLocator ?? typeof(MasterDbContextLocator), default);
@@ -263,7 +267,7 @@ namespace Fur.DatabaseAccessor
 
             // 只支持要么全是基元类型，或全部都是类类型
             if (!parameters.All(u => u.ParameterType.IsRichPrimitive()) && !parameters.All(u => u.ParameterType.IsClass))
-                throw Oops.Oh("Invalid type cast", typeof(InvalidOperationException));
+                throw new InvalidOperationException("Invalid type cast");
 
             if (parameters.All(u => u.ParameterType.IsRichPrimitive()))
             {

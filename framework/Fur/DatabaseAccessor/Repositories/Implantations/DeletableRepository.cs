@@ -1,17 +1,16 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
 // 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
 // -----------------------------------------------------------------------------
 
-using Fur.FriendlyException;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
@@ -329,7 +328,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="key">主键</param>
         public virtual void DeleteExists(object key)
         {
-            var entity = FindOrDefault(key) ?? throw Oops.Oh(EFCoreErrorCodes.DataNotFound, key);
+            var entity = FindOrDefault(key) ?? throw DbHelpers.DataNotFoundException();
             Delete(entity);
         }
 
@@ -342,7 +341,7 @@ namespace Fur.DatabaseAccessor
         public virtual async Task DeleteExistsAsync(object key, CancellationToken cancellationToken = default)
         {
             var entity = await FindOrDefaultAsync(key, cancellationToken);
-            if (entity == null) throw Oops.Oh(EFCoreErrorCodes.DataNotFound, key);
+            if (entity == null) throw DbHelpers.DataNotFoundException();
 
             await DeleteAsync(entity);
         }
@@ -471,7 +470,7 @@ namespace Fur.DatabaseAccessor
         public virtual EntityEntry<TEntity> FakeDelete(object key)
         {
             var deletedEntity = BuildDeletedEntity(key, false);
-            if (deletedEntity != null) return default;
+            if (deletedEntity == null) return default;
 
             var fakeDeleteProperty = SetFakePropertyValue(deletedEntity);
             return UpdateInclude(deletedEntity, fakeDeleteProperty.Name);
@@ -485,7 +484,7 @@ namespace Fur.DatabaseAccessor
         public virtual Task<EntityEntry<TEntity>> FakeDeleteAsync(object key)
         {
             var deletedEntity = BuildDeletedEntity(key, false);
-            if (deletedEntity != null) return default;
+            if (deletedEntity == null) return default;
 
             var fakeDeleteProperty = SetFakePropertyValue(deletedEntity);
             return UpdateIncludeAsync(deletedEntity, fakeDeleteProperty.Name);
@@ -499,7 +498,7 @@ namespace Fur.DatabaseAccessor
         public virtual EntityEntry<TEntity> FakeDeleteNow(object key)
         {
             var deletedEntity = BuildDeletedEntity(key, false);
-            if (deletedEntity != null) return default;
+            if (deletedEntity == null) return default;
 
             var fakeDeleteProperty = SetFakePropertyValue(deletedEntity);
             return UpdateIncludeNow(deletedEntity, fakeDeleteProperty.Name);
@@ -514,7 +513,7 @@ namespace Fur.DatabaseAccessor
         public virtual EntityEntry<TEntity> FakeDeleteNow(object key, bool acceptAllChangesOnSuccess)
         {
             var deletedEntity = BuildDeletedEntity(key, false);
-            if (deletedEntity != null) return default;
+            if (deletedEntity == null) return default;
 
             var fakeDeleteProperty = SetFakePropertyValue(deletedEntity);
             return UpdateIncludeNow(deletedEntity, new[] { fakeDeleteProperty.Name }, acceptAllChangesOnSuccess);
@@ -529,7 +528,7 @@ namespace Fur.DatabaseAccessor
         public virtual Task<EntityEntry<TEntity>> FakeDeleteNowAsync(object key, CancellationToken cancellationToken = default)
         {
             var deletedEntity = BuildDeletedEntity(key, false);
-            if (deletedEntity != null) return default;
+            if (deletedEntity == null) return default;
 
             var fakeDeleteProperty = SetFakePropertyValue(deletedEntity);
             return UpdateIncludeNowAsync(deletedEntity, new[] { fakeDeleteProperty.Name }, cancellationToken);
@@ -545,7 +544,7 @@ namespace Fur.DatabaseAccessor
         public virtual Task<EntityEntry<TEntity>> FakeDeleteNowAsync(object key, bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
         {
             var deletedEntity = BuildDeletedEntity(key, false);
-            if (deletedEntity != null) return default;
+            if (deletedEntity == null) return default;
 
             var fakeDeleteProperty = SetFakePropertyValue(deletedEntity);
             return UpdateIncludeNowAsync(deletedEntity, new[] { fakeDeleteProperty.Name }, acceptAllChangesOnSuccess, cancellationToken);
@@ -586,7 +585,7 @@ namespace Fur.DatabaseAccessor
             var fakeDeleteProperty = EntityType.ClrType.GetProperties(BindingFlags.Public | BindingFlags.Instance)
                     .FirstOrDefault(u => u.IsDefined(typeof(FakeDeleteAttribute), true));
 
-            if (fakeDeleteProperty == null) throw Oops.Oh(EFCoreErrorCodes.FakeDeleteNotFound);
+            if (fakeDeleteProperty == null) throw new InvalidOperationException("No attributes marked as fake deleted were found");
 
             // 读取假删除的名和属性
             var fakeDeleteAttribute = fakeDeleteProperty.GetCustomAttribute<FakeDeleteAttribute>(true);

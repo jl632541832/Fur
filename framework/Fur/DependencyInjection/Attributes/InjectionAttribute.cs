@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -60,5 +60,10 @@ namespace Fur.DependencyInjection
         /// 排序，排序越大，则在后面注册
         /// </summary>
         public int Order { get; set; }
+
+        /// <summary>
+        /// 代理类型，必须继承 DispatchProxy、IDispatchProxy
+        /// </summary>
+        public Type Proxy { get; set; }
     }
 }

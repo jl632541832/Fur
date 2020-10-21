@@ -4,6 +4,8 @@ using Fur.DatabaseAccessor;
 using Fur.DynamicApiController;
 using Fur.LinqBuilder;
 using Mapster;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
@@ -14,15 +16,17 @@ namespace Fur.Application
     /// <summary>
     /// 用户管理
     /// </summary>
-    [ApiDescriptionSettings("Demo")]
+    [AllowAnonymous, ApiDescriptionSettings("Default@1")]
     public class PersonService : IDynamicApiController
     {
-        // 初始化仓储
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly IRepository<Person> _personRepository;
 
-        public PersonService(IRepository<Person> personRepository)
+        public PersonService(IRepository<Person> personRepository
+            , IHttpContextAccessor httpContextAccessor)
         {
             _personRepository = personRepository;
+            _httpContextAccessor = httpContextAccessor;
         }
 
         /// <summary>

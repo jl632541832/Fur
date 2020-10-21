@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -269,9 +269,9 @@ namespace Fur.FriendlyException
         private static MethodIfException GetEndPointExceptionMethod()
         {
             // 通过查找调用堆栈中错误的方法，该方法所在类型集成自 ControllerBase 类型或 IDynamicApiController接口
-            var stackTrace = new StackTrace();
-            var exceptionMethodFrame = stackTrace.GetFrames()
-                .FirstOrDefault(u => typeof(ControllerBase).IsAssignableFrom(u.GetMethod().DeclaringType) || typeof(IDynamicApiController).IsAssignableFrom(u.GetMethod().DeclaringType));
+            var stackFrames = new StackTrace().GetFrames();
+            var exceptionMethodFrame = stackFrames.FirstOrDefault(u => typeof(ControllerBase).IsAssignableFrom(u.GetMethod().ReflectedType) || typeof(IDynamicApiController).IsAssignableFrom(u.GetMethod().ReflectedType))
+                ?? stackFrames.FirstOrDefault(u => u.GetMethod().IsFinal);
 
             // 修复忘记写 throw 抛异常bug
             if (exceptionMethodFrame == null) return default;
@@ -287,13 +287,38 @@ namespace Fur.FriendlyException
             methodIfException = new MethodIfException
             {
                 ErrorMethod = errorMethod,
-                IfExceptionAttributes = errorMethod.GetCustomAttributes<IfExceptionAttribute>()
+                IfExceptionAttributes = GetIfExceptionAttributes(stackFrames)
             };
 
             // 存入缓存
             ErrorMethods.TryAdd(errorMethod, methodIfException);
 
             return methodIfException;
+        }
+
+        /// <summary>
+        /// 获取堆栈中所有的异常特性
+        /// </summary>
+        /// <param name="stackFrames"></param>
+        /// <returns></returns>
+        private static IEnumerable<IfExceptionAttribute> GetIfExceptionAttributes(StackFrame[] stackFrames)
+        {
+            var errorMethods = new List<MethodInfo>();
+
+            // 遍历所有异常堆栈
+            foreach (var stackFrame in stackFrames)
+            {
+                var method = stackFrame.GetMethod();
+                var methodReflectedType = method.ReflectedType;
+                if (methodReflectedType == typeof(Oops)) continue;
+
+                errorMethods.Add(method as MethodInfo);
+
+                // 判断是否是终点路由
+                if (typeof(ControllerBase).IsAssignableFrom(methodReflectedType) || typeof(IDynamicApiController).IsAssignableFrom(methodReflectedType)) break;
+            }
+
+            return errorMethods.SelectMany(u => u.GetCustomAttributes<IfExceptionAttribute>());
         }
 
         /// <summary>

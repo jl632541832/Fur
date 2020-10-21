@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -12,7 +12,6 @@
 // -----------------------------------------------------------------------------
 
 using Fur.DependencyInjection;
-using Fur.FriendlyException;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -119,7 +118,7 @@ namespace Fur.DataValidation
         public static bool TryValidateValue(object value, string regexPattern, RegexOptions regexOptions = RegexOptions.None)
         {
             return value == null
-                ? throw Oops.Oh($"Value cannot be null", typeof(ArgumentNullException))
+                ? throw new ArgumentNullException($"Value cannot be null")
                 : Regex.IsMatch(value.ToString(), regexPattern, regexOptions);
         }
 
@@ -219,14 +218,14 @@ namespace Fur.DataValidation
 
                 // 判断是否是有效的验证类型
                 if (!ValidationTypes.Any(u => u == type))
-                    throw Oops.Oh($"{type.Name} is not a valid validation type", typeof(InvalidOperationException));
+                    throw new InvalidOperationException($"{type.Name} is not a valid validation type");
 
                 // 获取对应的枚举名称
                 var validationName = Enum.GetName(type, validationType);
 
                 // 判断是否配置验证正则表达式
                 if (!ValidationItemMetadatas.ContainsKey(validationName))
-                    throw Oops.Oh($"No ${validationName} validation type metadata exists", typeof(InvalidOperationException));
+                    throw new InvalidOperationException($"No ${validationName} validation type metadata exists");
 
                 // 获取对应的验证选项
                 var validationItemMetadataAttribute = ValidationItemMetadatas[validationName];
@@ -299,7 +298,7 @@ namespace Fur.DataValidation
         /// 替换默认验证失败消息
         /// </summary>
         /// <param name="name">验证唯一名称</param>
-        /// <param name="type"></param>
+        /// <param name="field"></param>
         /// <param name="customErrorMessages"></param>
         private static ValidationItemMetadataAttribute ReplaceValidateErrorMessage(string name, FieldInfo field, Dictionary<string, string> customErrorMessages)
         {

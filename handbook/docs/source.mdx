@@ -1,7 +1,7 @@
 ---
 id: source
-title: 1.2 源码结构
-sidebar_label: 1.2 源码结构
+title: 1.3 源码结构
+sidebar_label: 1.3 源码结构
 ---
 
 ## 1.2.1 源码架构
@@ -37,7 +37,7 @@ Solution Items
 
 ```cs
 // -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
@@ -178,7 +178,7 @@ dotnet_style_qualification_for_method = false:suggestion
 dotnet_style_qualification_for_property = false:suggestion
 
 # Add file header
-file_header_template = -----------------------------------------------------------------------------\nFur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。\nCopyright © 2020 Fur, Baiqian Co.,Ltd.\n\n框架名称：Fur\n框架作者：百小僧\n框架版本：1.0.0\n源码地址：Gitee：https://gitee.com/monksoul/Fur \n				   Github：https://github.com/monksoul/Fur \n开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）\n-----------------------------------------------------------------------------
+file_header_template = -----------------------------------------------------------------------------\nFur 是 .NET 5 平台下企业应用开发最佳实践框架。\nCopyright © 2020 Fur, Baiqian Co.,Ltd.\n\n框架名称：Fur\n框架作者：百小僧\n框架版本：1.0.0\n源码地址：Gitee：https://gitee.com/monksoul/Fur \n				   Github：https://github.com/monksoul/Fur \n开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）\n-----------------------------------------------------------------------------
 ```
 
 ## 1.2.4 `Fur` 核心层
@@ -284,6 +284,10 @@ Fur
 |          |     ├─ApiSeatAttribute.cs
 |          |     └DynamicApiControllerAttribute.cs
 ├─DependencyInjection
+|          ├─Options
+|          |    └DependencyInjectionSettingsOptions.cs
+|          ├─Models
+|          |   └ExternalService.cs
 |          ├─Extensions
 |          |     └DependencyInjectionServiceCollectionExtensions.cs
 |          ├─Enums
@@ -291,12 +295,12 @@ Fur
 |          |   ├─InjectionPatterns.cs
 |          |   └RegisterType.cs
 |          ├─Dependencies
-|          |      ├─IDependency.cs
+|          |      ├─IPrivateDependency.cs
 |          |      ├─IScoped.cs
 |          |      ├─ISingleton.cs
 |          |      ├─ITransient.cs
-|          |      ├─Aop
-|          |      |  └IDispatchProxy.cs
+|          |      ├─Proxies
+|          |      |    └IDispatchProxy.cs
 |          ├─Attributes
 |          |     ├─InjectionAttribute.cs
 |          |     └SkipScanAttribute.cs
@@ -364,25 +368,25 @@ Fur
 |        ├─Pools
 |        |   ├─DbContextPool.cs
 |        |   └IDbContextPool.cs
-|        ├─Options
-|        |    └DatabaseAccessorSettingsOptions.cs
 |        ├─MultiTenants
-|        |      ├─Providers
-|        |      |     ├─IMultiTenantOnDatabaseProvider.cs
-|        |      |     ├─IMultiTenantOnSchemaProvider.cs
-|        |      |     ├─IMultiTenantOnTableProvider.cs
-|        |      |     └IMultiTenantProviderDependency.cs
 |        |      ├─Locators
 |        |      |    └MultiTenantDbContextLocator.cs
 |        |      ├─Enums
 |        |      |   └MultiTenantOptions.cs
 |        |      ├─Entities
 |        |      |    └Tenant.cs
+|        |      ├─Dependencies
+|        |      |      ├─IMultiTenantOnDatabase.cs
+|        |      |      ├─IMultiTenantOnSchema.cs
+|        |      |      ├─IMultiTenantOnTable.cs
+|        |      |      └IPrivateMultiTenant.cs
 |        ├─Models
 |        |   ├─DbProvider.cs
 |        |   ├─PagedList.cs
 |        |   ├─ProcedureOutputResult.cs
-|        |   └ProcedureOutputValue.cs
+|        |   ├─ProcedureOutputValue.cs
+|        |   ├─SqlTemplate.cs
+|        |   └SqlTemplateParameter.cs
 |        ├─Locators
 |        |    ├─IDbContextLocator.cs
 |        |    └MasterDbContextLocator.cs
@@ -396,8 +400,8 @@ Fur
 |        |     ├─DatabaseAccessorServiceCollectionExtensions.cs
 |        |     ├─PagedQueryableExtensions.cs
 |        |     ├─Repositories
-|        |     |      ├─IEntityDbContextLocatorExtensions.cs
 |        |     |      ├─IEntityExtensions.cs
+|        |     |      ├─IEntityWithDbContextLocatorExtensions.cs
 |        |     |      └SqlExtensions.cs
 |        |     ├─DatabaseProvider
 |        |     |        ├─DatabaseProviderServiceCollectionExtensions.cs
@@ -420,8 +424,8 @@ Fur
 |        |    ├─Configures
 |        |    |     ├─IEntitySeedData.cs
 |        |    |     ├─IEntityTypeBuilder.cs
-|        |    |     ├─IModelBuilderDependency.cs
-|        |    |     └IModelBuilderFilter.cs
+|        |    |     ├─IModelBuilderFilter.cs
+|        |    |     └IPrivateModelBuilder.cs
 |        |    ├─Attributes
 |        |    |     ├─FakeDeleteAttribute.cs
 |        |    |     ├─NonAutomaticAttribute.cs
@@ -436,7 +440,7 @@ Fur
 |        |    |    ├─Models
 |        |    |    |   └DbContextCorrelationType.cs
 |        |    ├─Attributes
-|        |    |     └DbContextAttribute.cs
+|        |    |     └AppDbContextAttribute.cs
 |        ├─Attributes
 |        |     └DbParameterAttribute.cs
 |        ├─Advances
@@ -493,9 +497,11 @@ Fur
 |  ├─Extensions
 |  |     ├─AppApplicationBuilderExtensions.cs
 |  |     ├─AppServiceCollectionExtensions.cs
-|  |     └ObjectExtensions.cs
+|  |     ├─WebHostBuilderExtensions.cs
+|  |     ├─Types
+|  |     |   └ObjectExtensions.cs
 |  ├─Attributes
-|  |     └StartupAttribute.cs
+|  |     └AppStartupAttribute.cs
 ```
 
 ## 1.2.5 `Fur.Application` 业务应用层

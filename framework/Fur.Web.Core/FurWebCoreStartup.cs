@@ -6,19 +6,15 @@ using Microsoft.Extensions.Hosting;
 
 namespace Fur.Web.Core
 {
-    [AppStartup(800)]
+    [AppStartup(700)]
     public sealed class FurWebCoreStartup : AppStartup
     {
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddCorsAccessor();
 
-            services.AddSpecificationDocuments();
-            services.AddControllers()
-                       .AddDynamicApiControllers()
-                       .AddDataValidation()
-                       .AddFriendlyException()
-                       .AddUnifyResult<RESTfulResult, RESTfulResultProvider>();
+            services.AddControllersWithViews().AddInject()
+                .AddUnifyResult<RESTfulResult, RESTfulResultProvider>();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -29,6 +25,7 @@ namespace Fur.Web.Core
             }
 
             app.UseHttpsRedirection();
+            app.UseStaticFiles();
 
             app.UseRouting();
 
@@ -37,11 +34,13 @@ namespace Fur.Web.Core
             app.UseAuthentication();
             app.UseAuthorization();
 
-            app.UseSpecificationDocuments();
+            app.UseInject();
 
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllers();
+                endpoints.MapControllerRoute(
+                    name: "default",
+                    pattern: "{controller=Home}/{action=Index}/{id?}");
             });
         }
     }

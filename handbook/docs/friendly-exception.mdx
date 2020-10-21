@@ -53,6 +53,12 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 
 `Fur` 框架提供了非常灵活的友好异常处理方式。
 
+:::important 备注
+
+`.AddFriendlyException()` 默认已经继承在 `AddInject()` 中了，无需再次注册。也就是 `7.4.1` 章节可不配置。
+
+:::
+
 ### 7.4.1 注册友好异常服务
 
 ```cs {11} title="Fur.Web.Core\FurWebCoreStartup.cs"
@@ -363,16 +369,14 @@ namespace Fur.Web.Core
 
 `Fur` 框架还提供了非常灵活的配置文件配置异常，通过这种方式可以实现异常信息后期配置，也就是无需在开发阶段预先定义。
 
-```json {2-9} title="Fur.Web.Entry/appsettings.json"
+```json {2-8} title="Fur.Web.Entry/appsettings.json"
 {
-  "AppSettings": {
-    "ErrorCodeMessageSettings": {
-      "Definitions": [
-        [5000, "{0} 不能小于 {1}"],
-        [5001, "我叫 {0} 名字", "百小僧"],
-        [5002, "Oops! 出错了"]
-      ]
-    }
+  "ErrorCodeMessageSettings": {
+    "Definitions": [
+      [5000, "{0} 不能小于 {1}"],
+      [5001, "我叫 {0} 名字", "百小僧"],
+      [5002, "Oops! 出错了"]
+    ]
   }
 }
 ```
@@ -505,13 +509,112 @@ namespace Fur.Application
 
 ## 7.13 异常模型提供器
 
-文档整理中...
+`Fur` 框架提供 `规范化结果` 功能，可以通过实现 `IUnifyResultProvider` 提供器实现异常返回值定制，如：`RESTfulResultProvider`：
 
-## 7.14 `Fur` 内置异常
+```cs
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Collections.Generic;
 
-- `EFCoreErrorCodes`：`EF Core` 操作异常
-  - `DataNotFound`：未找到数据
-  - `KeyNotSet`：没有设置主键
+namespace Fur.UnifyResult
+{
+    /// <summary>
+    /// RESTful 风格返回值
+    /// </summary>
+    public class RESTfulResultProvider : IUnifyResultProvider
+    {
+        /// <summary>
+        /// 异常返回值
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public IActionResult OnException(ExceptionContext context)
+        {
+            return new JsonResult(new RESTfulResult
+            {
+                StatusCode = StatusCodes.Status500InternalServerError,
+                Successed = false,
+                Data = null,
+                Errors = context.Exception.Message
+            });
+        }
+
+        /// <summary>
+        /// 成功返回值
+        /// </summary>
+        /// <param name="context"></param>
+        /// <returns></returns>
+        public IActionResult OnSuccessed(ActionExecutedContext context)
+        {
+            object data;
+            // 处理内容结果
+            if (context.Result is ContentResult contentResult) data = contentResult.Content;
+            // 处理对象结果
+            else if (context.Result is ObjectResult objectResult) data = objectResult.Value;
+            else return null;
+
+            return new JsonResult(new RESTfulResult
+            {
+                StatusCode = context.Result is EmptyResult ? StatusCodes.Status204NoContent : StatusCodes.Status200OK,
+                Successed = true,
+                Data = data,
+                Errors = null
+            });
+        }
+
+        /// <summary>
+        /// 验证失败返回值
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="modelStates"></param>
+        /// <param name="validationResults"></param>
+        /// <param name="validateFaildMessage"></param>
+        /// <returns></returns>
+        public IActionResult OnValidateFailed(ActionExecutingContext context, ModelStateDictionary modelStates, Dictionary<string, IEnumerable<string>> validationResults, string validateFaildMessage)
+        {
+            return new JsonResult(new RESTfulResult
+            {
+                StatusCode = StatusCodes.Status400BadRequest,
+                Successed = false,
+                Data = null,
+                Errors = validationResults
+            });
+        }
+    }
+}
+```
+
+之后在 `Startup.cs` 中注册即可：
+
+```cs
+services.AddControllers().AddUnifyResult<RESTfulResult, RESTfulResultProvider>();
+```
+
+## 7.14 全局异常处理提供器
+
+通常我们需要在异常捕获的时候写日志，这时候就需要使用到 `IGlobalExceptionHandler` 异常定义处理程序，如：
+
+```cs {8}
+using Fur.DependencyInjection;
+using Fur.FriendlyException;
+using Microsoft.AspNetCore.Mvc.Filters;
+using System.Threading.Tasks;
+
+namespace Fur.Application
+{
+    public class LogExceptionHandler : IGlobalExceptionHandler, ISingleton
+    {
+        public Task OnExceptionAsync(ExceptionContext context)
+        {
+            // 写日志
+
+            return Task.CompletedTask;
+        }
+    }
+}
+```
 
 ## 7.15 反馈与建议
 

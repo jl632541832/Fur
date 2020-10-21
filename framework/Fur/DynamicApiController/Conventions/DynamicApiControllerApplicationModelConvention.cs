@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -12,7 +12,6 @@
 // -----------------------------------------------------------------------------
 
 using Fur.DependencyInjection;
-using Fur.FriendlyException;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
@@ -34,7 +33,7 @@ namespace Fur.DynamicApiController
         /// <summary>
         /// 动态接口控制器配置实例
         /// </summary>
-        private readonly DynamicApiControllerSettingsOptions _lazyControllerSettings;
+        private readonly DynamicApiControllerSettingsOptions _dynamicApiControllerSettings;
 
         /// <summary>
         /// 带版本的名称正则表达式
@@ -46,7 +45,7 @@ namespace Fur.DynamicApiController
         /// </summary>
         public DynamicApiControllerApplicationModelConvention()
         {
-            _lazyControllerSettings = App.GetOptions<DynamicApiControllerSettingsOptions>();
+            _dynamicApiControllerSettings = App.GetOptions<DynamicApiControllerSettingsOptions>();
             _nameVersionRegex = new Regex(@"V(?<version>[0-9_]+$)");
         }
 
@@ -62,7 +61,7 @@ namespace Fur.DynamicApiController
                 // 判断是否处理 Mvc控制器
                 if (typeof(ControllerBase).IsAssignableFrom(controller.ControllerType))
                 {
-                    if (!_lazyControllerSettings.SupportedMvcController.Value || controller.ApiExplorer?.IsVisible == false) continue;
+                    if (!_dynamicApiControllerSettings.SupportedMvcController.Value || controller.ApiExplorer?.IsVisible == false) continue;
                 }
 
                 var apiDescriptionSettings = controller.Attributes.FirstOrDefault(u => u is ApiDescriptionSettingsAttribute) as ApiDescriptionSettingsAttribute;
@@ -95,7 +94,7 @@ namespace Fur.DynamicApiController
         /// <param name="apiDescriptionSettings">接口描述配置</param>
         private void ConfigureControllerName(ControllerModel controller, ApiDescriptionSettingsAttribute apiDescriptionSettings)
         {
-            controller.ControllerName = ConfigureControllerAndActionName(apiDescriptionSettings, controller.ControllerName, _lazyControllerSettings.AbandonControllerAffixes, _ => _);
+            controller.ControllerName = ConfigureControllerAndActionName(apiDescriptionSettings, controller.ControllerName, _dynamicApiControllerSettings.AbandonControllerAffixes, _ => _);
         }
 
         /// <summary>
@@ -138,7 +137,7 @@ namespace Fur.DynamicApiController
         /// <param name="apiDescriptionSettings">接口描述配置</param>
         private void ConfigureActionName(ActionModel action, ApiDescriptionSettingsAttribute apiDescriptionSettings)
         {
-            action.ActionName = ConfigureControllerAndActionName(apiDescriptionSettings, action.ActionName, _lazyControllerSettings.AbandonActionAffixes, (tempName) =>
+            action.ActionName = ConfigureControllerAndActionName(apiDescriptionSettings, action.ActionName, _dynamicApiControllerSettings.AbandonActionAffixes, (tempName) =>
             {
                 // 处理动作方法名称谓词
                 if (apiDescriptionSettings?.KeepVerb != true)
@@ -171,7 +170,7 @@ namespace Fur.DynamicApiController
             var verbKey = Penetrates.GetCamelCaseFirstWord(action.ActionMethod.Name).ToLower();
             var verb = Penetrates.VerbToHttpMethods.ContainsKey(verbKey)
                 ? Penetrates.VerbToHttpMethods[verbKey]
-                : _lazyControllerSettings.DefaultHttpMethod.ToUpper();
+                : _dynamicApiControllerSettings.DefaultHttpMethod.ToUpper();
 
             // 添加请求约束
             selectorModel.ActionConstraints.Add(new HttpMethodActionConstraint(new[] { verb }));
@@ -184,7 +183,7 @@ namespace Fur.DynamicApiController
                 "PUT" => new HttpPutAttribute(),
                 "DELETE" => new HttpDeleteAttribute(),
                 "PATCH" => new HttpPatchAttribute(),
-                _ => throw Oops.Oh($"{verb}", typeof(NotSupportedException))
+                _ => throw new NotSupportedException($"{verb}")
             };
 
             selectorModel.EndpointMetadata.Add(httpMethodAttribute);
@@ -200,7 +199,7 @@ namespace Fur.DynamicApiController
             if (action.Parameters.Count == 0) return;
 
             // 如果动作方法请求谓词只有GET和HEAD，则将类转查询参数
-            if (_lazyControllerSettings.ModelToQuery.Value)
+            if (_dynamicApiControllerSettings.ModelToQuery.Value)
             {
                 var httpMethods = action.Selectors
                     .SelectMany(u => u.ActionConstraints
@@ -270,7 +269,7 @@ namespace Fur.DynamicApiController
             if (!string.IsNullOrEmpty(template))
             {
                 // 处理多个斜杆问题
-                template = Regex.Replace(_lazyControllerSettings.LowercaseRoute.Value ? template.ToLower() : template, @"\/{2,}", "/");
+                template = Regex.Replace(_dynamicApiControllerSettings.LowercaseRoute.Value ? template.ToLower() : template, @"\/{2,}", "/");
 
                 // 生成路由
                 actionAttributeRouteModel = string.IsNullOrEmpty(template) ? null : new AttributeRouteModel(new RouteAttribute(template));
@@ -287,6 +286,7 @@ namespace Fur.DynamicApiController
         /// </summary>
         /// <param name="controller"></param>
         /// <param name="apiDescriptionSettings"></param>
+        /// <param name="parameterRouteTemplate">参数路由模板</param>
         /// <returns></returns>
         private string GenerateControllerRouteTemplate(ControllerModel controller, ApiDescriptionSettingsAttribute apiDescriptionSettings, ParameterRouteTemplate parameterRouteTemplate = default)
         {
@@ -295,10 +295,10 @@ namespace Fur.DynamicApiController
             if (selectorModel.AttributeRouteModel != null) return default;
 
             // 读取模块
-            var module = apiDescriptionSettings?.Module ?? _lazyControllerSettings.DefaultModule;
+            var module = apiDescriptionSettings?.Module ?? _dynamicApiControllerSettings.DefaultModule;
 
             // 路由默认前缀
-            var routePrefix = _lazyControllerSettings.DefaultRoutePrefix;
+            var routePrefix = _dynamicApiControllerSettings.DefaultRoutePrefix;
 
             // 生成路由模板
             // 如果参数路由模板为空或不包含任何控制器参数模板，则返回正常的模板
@@ -331,7 +331,7 @@ namespace Fur.DynamicApiController
                 var parameterAttributes = parameterModel.Attributes;
 
                 // 处理小写参数路由匹配问题
-                if (_lazyControllerSettings.LowercaseRoute.Value) parameterModel.ParameterName = parameterModel.ParameterName.ToLower();
+                if (_dynamicApiControllerSettings.LowercaseRoute.Value) parameterModel.ParameterName = parameterModel.ParameterName.ToLower();
 
                 // 如果没有贴 [FromRoute] 特性且不是基元类型，则跳过
                 // 如果没有贴 [FromRoute] 特性且有任何绑定特性，则跳过
@@ -396,26 +396,26 @@ namespace Fur.DynamicApiController
                 tempName = name;
                 apiVersion ??= version;
 
-                // 判断是否保留原有名称
-                if (apiDescriptionSettings?.KeepName != true)
-                {
-                    // 清除指定前后缀
-                    tempName = Penetrates.ClearStringAffixes(tempName, affixes: affixes);
+                // 清除指定前后缀
+                tempName = Penetrates.ClearStringAffixes(tempName, affixes: affixes);
 
+                // 判断是否保留原有名称
+                if ((apiDescriptionSettings?.KeepName == null || apiDescriptionSettings.KeepName == false) && _dynamicApiControllerSettings?.KeepName != true)
+                {
                     // 自定义配置
                     tempName = configure.Invoke(tempName);
 
                     // 处理骆驼命名
                     if ((apiDescriptionSettings?.SplitCamelCase ?? true) != false)
                     {
-                        tempName = string.Join(_lazyControllerSettings.CamelCaseSeparator, Penetrates.SplitCamelCase(tempName));
+                        tempName = string.Join(_dynamicApiControllerSettings.CamelCaseSeparator, Penetrates.SplitCamelCase(tempName));
                     }
                 }
             }
 
             // 拼接名称和版本号
-            var newName = $"{tempName}{(string.IsNullOrEmpty(apiVersion) ? null : $"{_lazyControllerSettings.VersionSeparator}{apiVersion}")}";
-            return _lazyControllerSettings.LowercaseRoute.Value ? newName.ToLower() : newName;
+            var newName = $"{tempName}{(string.IsNullOrEmpty(apiVersion) ? null : $"{_dynamicApiControllerSettings.VersionSeparator}{apiVersion}")}";
+            return _dynamicApiControllerSettings.LowercaseRoute.Value ? newName.ToLower() : newName;
         }
 
         /// <summary>

@@ -1,22 +1,19 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
 // 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
 // -----------------------------------------------------------------------------
 
-using Fur.DatabaseAccessor;
 using Fur.DependencyInjection;
-using Fur.FriendlyException;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,6 +63,16 @@ namespace Fur
         /// <summary>
         /// 应用服务提供器
         /// </summary>
+        /// <remarks>
+        /// 通过它可以获取第三方容器注入的服务，也就是不是 asp.net core 托管的，或者自己实现 Ioc/DI 的方式
+        /// 如采用 autofac 替换默认 IOC 容器，这样就可以通过 Application.GetAutofacRoot() 获取 Autofac容器对象，无需采用静态类手工存储该容器
+        /// </remarks>
+        /// <example>
+        /// <code>
+        /// var container = Application.GetAutofacRoot();
+        /// var service = container.Resolve(typeof(TService));
+        /// </code>
+        /// </example>
         public static IServiceProvider ApplicationServices { get; internal set; }
 
         /// <summary>
@@ -81,7 +88,7 @@ namespace Fur
         public static readonly IConfiguration Configuration;
 
         /// <summary>
-        /// 应用环境
+        /// 应用环境，如，是否是开发环境，生产环境等
         /// </summary>
         public static IWebHostEnvironment HostEnvironment => GetService<IWebHostEnvironment>();
 
@@ -200,104 +207,6 @@ namespace Fur
         }
 
         /// <summary>
-        /// 不支持解析服务错误提示
-        /// </summary>
-        private const string NotSupportedResolveMessage = "Reading {0} instances on non HTTP requests is not supported.";
-
-        /// <summary>
-        /// 获取非泛型仓储
-        /// </summary>
-        /// <typeparam name="TEntity">实体类型</typeparam>
-        public static IRepository GetRepository()
-        {
-            return GetRequestService<IRepository>()
-                ?? throw Oops.Oh(NotSupportedResolveMessage, typeof(NotSupportedException), nameof(IRepository));
-        }
-
-        /// <summary>
-        /// 获取实体仓储
-        /// </summary>
-        /// <typeparam name="TEntity">实体类型</typeparam>
-        /// <returns>IRepository<TEntity></returns>
-        public static IRepository<TEntity> GetRepository<TEntity>()
-            where TEntity : class, IPrivateEntity, new()
-        {
-            return GetRequestService<IRepository<TEntity>>()
-                ?? throw Oops.Oh(NotSupportedResolveMessage, typeof(NotSupportedException), nameof(IRepository<TEntity>));
-        }
-
-        /// <summary>
-        /// 获取实体仓储
-        /// </summary>
-        /// <typeparam name="TEntity">实体类型</typeparam>
-        /// <typeparam name="TDbContextLocator">数据库上下文定位器</typeparam>
-        /// <returns>IRepository<TEntity, TDbContextLocator></returns>
-        public static IRepository<TEntity, TDbContextLocator> GetRepository<TEntity, TDbContextLocator>()
-            where TEntity : class, IPrivateEntity, new()
-            where TDbContextLocator : class, IDbContextLocator
-        {
-            return GetRequestService<IRepository<TEntity, TDbContextLocator>>()
-                ?? throw Oops.Oh(NotSupportedResolveMessage, typeof(NotSupportedException), nameof(IRepository<TEntity, TDbContextLocator>));
-        }
-
-        /// <summary>
-        /// 获取Sql仓储
-        /// </summary>
-        /// <returns>ISqlRepository</returns>
-        public static ISqlRepository GetSqlRepository()
-        {
-            return GetRequestService<ISqlRepository>()
-                ?? throw Oops.Oh(NotSupportedResolveMessage, typeof(NotSupportedException), nameof(ISqlRepository));
-        }
-
-        /// <summary>
-        /// 获取Sql仓储
-        /// </summary>
-        /// <typeparam name="TDbContextLocator">数据库上下文定位器</typeparam>
-        /// <returns>ISqlRepository<TDbContextLocator></returns>
-        public static ISqlRepository<TDbContextLocator> GetSqlRepository<TDbContextLocator>()
-            where TDbContextLocator : class, IDbContextLocator
-        {
-            return GetRequestService<ISqlRepository<TDbContextLocator>>()
-                ?? throw Oops.Oh(NotSupportedResolveMessage, typeof(NotSupportedException), nameof(ISqlRepository<TDbContextLocator>));
-        }
-
-        /// <summary>
-        /// 获取Sql代理
-        /// </summary>
-        /// <returns>ISqlRepository</returns>
-        public static TSqlDispatchProxy GetSqlDispatchProxy<TSqlDispatchProxy>()
-            where TSqlDispatchProxy : class, ISqlDispatchProxy
-        {
-            return GetRequestService<TSqlDispatchProxy>()
-                ?? throw Oops.Oh(NotSupportedResolveMessage, typeof(NotSupportedException), nameof(ISqlDispatchProxy));
-        }
-
-        /// <summary>
-        /// 获取瞬时数据库上下文
-        /// </summary>
-        /// <typeparam name="TDbContextLocator">数据库上下文定位器</typeparam>
-        /// <returns></returns>
-        public static DbContext GetDbContext<TDbContextLocator>()
-            where TDbContextLocator : class, IDbContextLocator
-        {
-            var dbContextResolve = GetService<Func<Type, ITransient, DbContext>>();
-            return dbContextResolve(typeof(TDbContextLocator), default);
-        }
-
-        /// <summary>
-        /// 获取作用域数据库上下文
-        /// </summary>
-        /// <typeparam name="TDbContextLocator">数据库上下文定位器</typeparam>
-        /// <returns></returns>
-        public static DbContext GetRequestDbContext<TDbContextLocator>()
-            where TDbContextLocator : class, IDbContextLocator
-        {
-            var dbContextResolve = GetRequestService<Func<Type, IScoped, DbContext>>();
-            return dbContextResolve(typeof(TDbContextLocator), default);
-        }
-
-        /// <summary>
         /// 打印验证信息到 MiniProfiler
         /// </summary>
         /// <param name="category">分类</param>
@@ -320,7 +229,7 @@ namespace Fur
         /// <summary>
         /// 获取应用有效程序集
         /// </summary>
-        /// <returns>IEnumerable<Assembly></returns>
+        /// <returns>IEnumerable</returns>
         internal static IEnumerable<Assembly> GetAssemblies()
         {
             // 需排除的程序集后缀

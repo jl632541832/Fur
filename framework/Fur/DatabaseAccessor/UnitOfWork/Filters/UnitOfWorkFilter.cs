@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -33,11 +33,6 @@ namespace Fur.DatabaseAccessor
         private const string MiniProfilerCategory = "transaction";
 
         /// <summary>
-        /// 过滤器排序
-        /// </summary>
-        internal const int FilterOrder = -1000;
-
-        /// <summary>
         /// 数据库上下文池
         /// </summary>
         private readonly IDbContextPool _dbContextPool;
@@ -50,6 +45,11 @@ namespace Fur.DatabaseAccessor
         {
             _dbContextPool = dbContextPool;
         }
+
+        /// <summary>
+        /// 过滤器排序
+        /// </summary>
+        internal const int FilterOrder = 9999;
 
         /// <summary>
         /// 排序属性
@@ -68,6 +68,14 @@ namespace Fur.DatabaseAccessor
             var actionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
             var method = actionDescriptor.MethodInfo;
 
+            TransactionScope transaction = null;
+            var isSupportTransactionScope = true;
+            var disabledTransact = false;
+
+            // 如果没有在构造函数中初始化上下文，则跳过
+            var dbContexts = _dbContextPool.GetDbContexts();
+            if (!dbContexts.Any()) goto Continue;
+
             // 工作单元特性
             UnitOfWorkAttribute unitOfWorkAttribute = null;
 
@@ -78,19 +86,19 @@ namespace Fur.DatabaseAccessor
                 if (!unitOfWorkAttribute.Enabled)
                 {
                     App.PrintToMiniProfiler("UnitOfWork", "Disabled !");
+                    await next();
                     return;
                 }
             }
 
             // 如果方法贴了 [NonTransact] 则跳过事务
-            var disabledTransact = method.IsDefined(typeof(NonTransactAttribute), true);
+            disabledTransact = method.IsDefined(typeof(NonTransactAttribute), true);
 
             // 打印验禁止事务信息
             if (disabledTransact) App.PrintToMiniProfiler(MiniProfilerCategory, "Disabled !");
 
             // 判断是否支持环境事务
-            var isSupportTransactionScope = !_dbContextPool.GetDbContexts().Any(u => DbProvider.NotSupportTransactionScopeDatabase.Contains(u.Database.ProviderName));
-            TransactionScope transaction = null;
+            isSupportTransactionScope = !dbContexts.Any(u => DbProvider.NotSupportTransactionScopeDatabase.Contains(u.Database.ProviderName));
 
             if (isSupportTransactionScope && !disabledTransact)
             {
@@ -108,8 +116,8 @@ namespace Fur.DatabaseAccessor
             // 打印不支持事务
             else if (!isSupportTransactionScope && !disabledTransact) { App.PrintToMiniProfiler(MiniProfilerCategory, "NotSupported !"); }
 
-            // 继续执行
-            var resultContext = await next();
+        // 继续执行
+        Continue: var resultContext = await next();
 
             // 判断是否出现异常
             if (resultContext.Exception == null)

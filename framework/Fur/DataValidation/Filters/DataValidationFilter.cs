@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -37,11 +37,6 @@ namespace Fur.DataValidation
         private const string MiniProfilerCategory = "validation";
 
         /// <summary>
-        /// 过滤器排序
-        /// </summary>
-        internal const int FilterOrder = -2000;
-
-        /// <summary>
         /// 服务提供器
         /// </summary>
         private readonly IServiceProvider _serviceProvider;
@@ -56,7 +51,12 @@ namespace Fur.DataValidation
         }
 
         /// <summary>
-        /// 排序
+        /// 过滤器排序
+        /// </summary>
+        internal const int FilterOrder = -1000;
+
+        /// <summary>
+        /// 排序属性
         /// </summary>
         public int Order => FilterOrder;
 
@@ -71,8 +71,10 @@ namespace Fur.DataValidation
         /// <param name="context"></param>
         public void OnActionExecuting(ActionExecutingContext context)
         {
-            // 获取动作方法描述器
+            // 排除 Mvc 视图
             var actionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
+            if (actionDescriptor.ControllerTypeInfo.BaseType == typeof(Controller)) return;
+
             var method = actionDescriptor.MethodInfo;
             var modelState = context.ModelState;
 
@@ -82,7 +84,7 @@ namespace Fur.DataValidation
             // 如果贴了 [NonValidation] 特性 或 所在类型贴了 [NonValidation] 特性，则跳过验证
             if (actionDescriptor.Parameters.Count == 0 ||
                 method.IsDefined(nonValidationAttributeType, true) ||
-                method.DeclaringType.IsDefined(nonValidationAttributeType, true))
+                method.ReflectedType.IsDefined(nonValidationAttributeType, true))
             {
                 // 打印验证跳过消息
                 App.PrintToMiniProfiler(MiniProfilerCategory, "Skipped");

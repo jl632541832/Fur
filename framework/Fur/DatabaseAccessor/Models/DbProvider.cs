@@ -1,10 +1,10 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// -----------------------------------------------------------------------------
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -12,7 +12,6 @@
 // -----------------------------------------------------------------------------
 
 using Fur.DependencyInjection;
-using Fur.FriendlyException;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using System;
@@ -160,7 +159,7 @@ namespace Fur.DatabaseAccessor
                 {
                     // 首先查找 DbConnectionString 键，如果没有找到，则当成 Key 去查找
                     var connStrValue = configuration.GetConnectionString(connStr);
-                    return !string.IsNullOrEmpty(connStrValue) ? connStrValue : configuration[connStrValue];
+                    return !string.IsNullOrEmpty(connStrValue) ? connStrValue : configuration[connStr];
                 }
             }
         }
@@ -179,7 +178,7 @@ namespace Fur.DatabaseAccessor
         {
             if (commandType == CommandType.StoredProcedure && NotSupportStoredProcedureDatabases.Contains(providerName))
             {
-                throw Oops.Oh(NotSupportException, typeof(NotSupportedException), "stored procedure");
+                throw new NotSupportedException(string.Format(NotSupportException, "stored procedure"));
             }
         }
 
@@ -192,12 +191,12 @@ namespace Fur.DatabaseAccessor
         {
             if (NotSupportFunctionDatabases.Contains(providerName))
             {
-                throw Oops.Oh(NotSupportException, typeof(NotSupportedException), "function");
+                throw new NotSupportedException(string.Format(NotSupportException, "function"));
             }
 
             if (dbFunctionType == DbFunctionType.Table && NotSupportTableFunctionDatabases.Contains(providerName))
             {
-                throw Oops.Oh(NotSupportException, typeof(NotSupportedException), "table function");
+                throw new NotSupportedException(string.Format(NotSupportException, "table function"));
             }
         }
     }

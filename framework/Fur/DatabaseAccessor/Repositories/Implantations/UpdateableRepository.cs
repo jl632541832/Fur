@@ -1,17 +1,16 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
 // 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
 // -----------------------------------------------------------------------------
 
-using Fur.FriendlyException;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
 using System;
@@ -1727,8 +1726,8 @@ namespace Fur.DatabaseAccessor
         /// <param name="entity">实体</param>
         private void CheckEntityEffective(TEntity entity)
         {
-            var (Key, Value) = GetEntityKeyValue(entity);
-            var trackEntity = FindOrDefault(Value) ?? throw Oops.Oh(EFCoreErrorCodes.DataNotFound, Key, Value);
+            var (_, Value) = GetEntityKeyValue(entity);
+            var trackEntity = FindOrDefault(Value) ?? throw DbHelpers.DataNotFoundException();
             // 取消跟踪实体
             Detach(trackEntity);
         }
@@ -1739,9 +1738,9 @@ namespace Fur.DatabaseAccessor
         /// <param name="entity">实体</param>
         private async Task CheckEntityEffectiveAsync(TEntity entity)
         {
-            var (Key, Value) = GetEntityKeyValue(entity);
+            var (_, Value) = GetEntityKeyValue(entity);
             var trackEntity = await FindOrDefaultAsync(Value);
-            if (trackEntity == null) throw Oops.Oh(EFCoreErrorCodes.DataNotFound, Key, Value);
+            if (trackEntity == null) throw DbHelpers.DataNotFoundException();
             // 取消跟踪实体
             Detach(trackEntity);
         }
@@ -1762,7 +1761,7 @@ namespace Fur.DatabaseAccessor
             var keyValue = keyProperty.GetValue(entity);
 
             // 主键不能为空，且不能为 0，也不能为 Guid 空值
-            if (keyValue == null || (keyProperty.PropertyType.IsValueType && (keyValue.Equals(0) || keyValue.Equals(Guid.Empty)))) throw Oops.Oh(EFCoreErrorCodes.KeyNotSet, keyName, keyValue);
+            if (keyValue == null || (keyProperty.PropertyType.IsValueType && (keyValue.Equals(0) || keyValue.Equals(Guid.Empty)))) throw new InvalidOperationException("The primary key value is not set");
 
             return (keyName, keyValue);
         }

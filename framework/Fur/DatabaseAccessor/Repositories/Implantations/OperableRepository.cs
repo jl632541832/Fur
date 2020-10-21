@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -757,7 +757,7 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>IQueryable<TEntity></returns>
+        /// <returns>IQueryable</returns>
         public virtual IQueryable<TEntity> FromSqlRaw(string sql, params object[] parameters)
         {
             // 获取真实运行 Sql
@@ -773,7 +773,7 @@ namespace Fur.DatabaseAccessor
         /// 支持字符串内插语法
         /// </remarks>
         /// <param name="sql">sql 语句</param>
-        /// <returns>IQueryable<TEntity></returns>
+        /// <returns>IQueryable</returns>
         public virtual IQueryable<TEntity> FromSqlInterpolated(FormattableString sql)
         {
             // 获取真实运行 Sql

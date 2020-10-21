@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -107,8 +107,8 @@ namespace Fur.SpecificationDocument
             // 配置 Swagger SchemaId
             ConfigureSchemaId(swaggerGenOptions);
 
-            // 使用内部枚举定义模型，无需创建 SchemaId
-            swaggerGenOptions.UseInlineDefinitionsForEnums();
+            //使得Swagger能够正确地显示Enum的对应关系
+            swaggerGenOptions.SchemaFilter<EnumSchemaFilter>();
 
             // 配置动作方法标签
             ConfigureTagsAction(swaggerGenOptions);
@@ -399,11 +399,11 @@ namespace Fur.SpecificationDocument
             static IEnumerable<GroupOrder> Function(MethodInfo method)
             {
                 // 如果动作方法没有定义 [ApiDescriptionSettings] 特性，则返回所在控制器分组
-                if (!method.IsDefined(typeof(ApiDescriptionSettingsAttribute), true)) return GetControllerGroups(method.DeclaringType);
+                if (!method.IsDefined(typeof(ApiDescriptionSettingsAttribute), true)) return GetControllerGroups(method.ReflectedType);
 
                 // 读取分组
                 var apiDescriptionSettings = method.GetCustomAttribute<ApiDescriptionSettingsAttribute>(true);
-                if (apiDescriptionSettings.Groups == null || apiDescriptionSettings.Groups.Length == 0) return GetControllerGroups(method.DeclaringType);
+                if (apiDescriptionSettings.Groups == null || apiDescriptionSettings.Groups.Length == 0) return GetControllerGroups(method.ReflectedType);
 
                 // 处理排序
                 var groupOrders = new List<GroupOrder>();
@@ -424,7 +424,7 @@ namespace Fur.SpecificationDocument
         /// <summary>
         /// 获取控制器标签
         /// </summary>
-        /// <param name="apiDescription">控制器接口描述器</param>
+        /// <param name="controllerActionDescriptor">控制器接口描述器</param>
         /// <returns></returns>
         private static string GetControllerTag(ControllerActionDescriptor controllerActionDescriptor)
         {
@@ -478,15 +478,15 @@ namespace Fur.SpecificationDocument
         /// 是否是动作方法
         /// </summary>
         /// <param name="method">方法</param>
-        /// <param name="declaringType">声明类型</param>
+        /// <param name="ReflectedType">声明类型</param>
         /// <returns></returns>
-        private static bool IsAction(MethodInfo method, Type declaringType)
+        private static bool IsAction(MethodInfo method, Type ReflectedType)
         {
             // 不是非公开、抽象、静态、泛型方法
             if (!method.IsPublic || method.IsAbstract || method.IsStatic || method.IsGenericMethod) return false;
 
             // 如果所在类型不是控制器，则该行为也被忽略
-            if (method.DeclaringType != declaringType) return false;
+            if (method.ReflectedType != ReflectedType) return false;
 
             // 不是能被导出忽略的接方法
             if (method.IsDefined(typeof(ApiExplorerSettingsAttribute), true) && method.GetCustomAttribute<ApiExplorerSettingsAttribute>(true).IgnoreApi) return false;
@@ -497,7 +497,7 @@ namespace Fur.SpecificationDocument
         /// <summary>
         /// 解析分组名称中的排序
         /// </summary>
-        /// <param name="name">分组名</param>
+        /// <param name="group">分组名</param>
         /// <returns></returns>
         private static GroupOrder ResolveGroupOrder(string group)
         {

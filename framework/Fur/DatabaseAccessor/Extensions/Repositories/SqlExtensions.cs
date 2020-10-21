@@ -1,10 +1,10 @@
 ﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下极易入门、极速开发的 Web 应用框架。
+// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
 // Copyright © 2020 Fur, Baiqian Co.,Ltd.
 //
 // 框架名称：Fur
 // 框架作者：百小僧
-// 框架版本：1.0.0
+// 框架版本：1.0.0-rc.final.17
 // 官方网站：https://chinadot.net
 // 源码地址：Gitee：https://gitee.com/monksoul/Fur
 // 				    Github：https://github.com/monksoul/Fur
@@ -12,11 +12,9 @@
 // -----------------------------------------------------------------------------
 
 using Fur.DependencyInjection;
-using Fur.FriendlyException;
 using Mapster;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -57,7 +55,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataTable</returns>
         public static DataTable SqlQuery(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteReader(sql, parameters);
+            return GetSqlDatabase(ref sql).ExecuteReader(sql, parameters);
         }
 
         /// <summary>
@@ -68,7 +66,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataTable</returns>
         public static DataTable SqlQuery(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteReader(sql, model).dataTable;
+            return GetSqlDatabase(ref sql).ExecuteReader(sql, model).dataTable;
         }
 
         /// <summary>
@@ -79,7 +77,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<DataTable></returns>
         public static Task<DataTable> SqlQueryAsync(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteReaderAsync(sql, parameters);
+            return GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, parameters);
         }
 
         /// <summary>
@@ -91,7 +89,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<DataTable></returns>
         public static Task<DataTable> SqlQueryAsync(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteReaderAsync(sql, parameters, cancellationToken: cancellationToken);
+            return GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, parameters, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -103,7 +101,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<DataTable></returns>
         public static async Task<DataTable> SqlQueryAsync(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataTable, _) = await GetSqlRepositoryDatabase(ref sql).ExecuteReaderAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataTable, _) = await GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, model, cancellationToken: cancellationToken);
             return dataTable;
         }
 
@@ -116,7 +114,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T></returns>
         public static List<T> SqlQuery<T>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteReader(sql, parameters).ToList<T>();
+            return GetSqlDatabase(ref sql).ExecuteReader(sql, parameters).ToList<T>();
         }
 
         /// <summary>
@@ -128,7 +126,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T></returns>
         public static List<T> SqlQuery<T>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteReader(sql, model).dataTable.ToList<T>();
+            return GetSqlDatabase(ref sql).ExecuteReader(sql, model).dataTable.ToList<T>();
         }
 
         /// <summary>
@@ -140,7 +138,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T>></returns>
         public static async Task<List<T>> SqlQueryAsync<T>(this string sql, params DbParameter[] parameters)
         {
-            var dataTable = await GetSqlRepositoryDatabase(ref sql).ExecuteReaderAsync(sql, parameters);
+            var dataTable = await GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, parameters);
             return dataTable.ToList<T>();
         }
 
@@ -154,7 +152,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T>></returns>
         public static async Task<List<T>> SqlQueryAsync<T>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataTable = await GetSqlRepositoryDatabase(ref sql).ExecuteReaderAsync(sql, parameters, cancellationToken: cancellationToken);
+            var dataTable = await GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataTable.ToList<T>();
         }
 
@@ -168,7 +166,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T>></returns>
         public static async Task<List<T>> SqlQueryAsync<T>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataTable, _) = await GetSqlRepositoryDatabase(ref sql).ExecuteReaderAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataTable, _) = await GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, model, cancellationToken: cancellationToken);
             return dataTable.ToList<T>();
         }
 
@@ -180,7 +178,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataSet</returns>
         public static DataSet SqlQueries(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, parameters);
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters);
         }
 
         /// <summary>
@@ -191,7 +189,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataSet</returns>
         public static DataSet SqlQueries(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, model).dataSet;
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet;
         }
 
         /// <summary>
@@ -202,7 +200,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<DataSet></returns>
         public static Task<DataSet> SqlQueriesAsync(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
+            return GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
         }
 
         /// <summary>
@@ -214,7 +212,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<DataSet></returns>
         public static Task<DataSet> SqlQueriesAsync(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
+            return GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -226,7 +224,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<DataSet></returns>
         public static async Task<DataSet> SqlQueriesAsync(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataSet, _) = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataSet, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
             return dataSet;
         }
 
@@ -239,7 +237,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T1></returns>
         public static List<T1> SqlQueries<T1>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1>();
         }
 
         /// <summary>
@@ -252,7 +250,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2) SqlQueries<T1, T2>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2>();
         }
 
         /// <summary>
@@ -266,7 +264,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3) SqlQueries<T1, T2, T3>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3>();
         }
 
         /// <summary>
@@ -281,7 +279,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4) SqlQueries<T1, T2, T3, T4>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4>();
         }
 
         /// <summary>
@@ -297,7 +295,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5) SqlQueries<T1, T2, T3, T4, T5>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4, T5>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4, T5>();
         }
 
         /// <summary>
@@ -314,7 +312,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6) SqlQueries<T1, T2, T3, T4, T5, T6>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4, T5, T6>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4, T5, T6>();
         }
 
         /// <summary>
@@ -332,7 +330,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7) SqlQueries<T1, T2, T3, T4, T5, T6, T7>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4, T5, T6, T7>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
         /// <summary>
@@ -351,7 +349,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8) SqlQueries<T1, T2, T3, T4, T5, T6, T7, T8>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
         /// <summary>
@@ -363,7 +361,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T1></returns>
         public static List<T1> SqlQueries<T1>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1>();
         }
 
         /// <summary>
@@ -376,7 +374,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2) SqlQueries<T1, T2>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2>();
         }
 
         /// <summary>
@@ -390,7 +388,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3) SqlQueries<T1, T2, T3>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3>();
         }
 
         /// <summary>
@@ -405,7 +403,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4) SqlQueries<T1, T2, T3, T4>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4>();
         }
 
         /// <summary>
@@ -421,7 +419,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5) SqlQueries<T1, T2, T3, T4, T5>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4, T5>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4, T5>();
         }
 
         /// <summary>
@@ -438,7 +436,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6) SqlQueries<T1, T2, T3, T4, T5, T6>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4, T5, T6>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4, T5, T6>();
         }
 
         /// <summary>
@@ -456,7 +454,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7) SqlQueries<T1, T2, T3, T4, T5, T6, T7>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4, T5, T6, T7>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
         /// <summary>
@@ -475,7 +473,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8) SqlQueries<T1, T2, T3, T4, T5, T6, T7, T8>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
+            return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
         /// <summary>
@@ -487,7 +485,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T1>></returns>
         public static async Task<List<T1>> SqlQueriesAsync<T1>(this string sql, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
             return dataset.ToList<T1>();
         }
 
@@ -501,7 +499,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T1>></returns>
         public static async Task<List<T1>> SqlQueriesAsync<T1>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataset.ToList<T1>();
         }
 
@@ -515,7 +513,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2)> SqlQueriesAsync<T1, T2>(this string sql, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
             return dataset.ToList<T1, T2>();
         }
 
@@ -530,7 +528,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2)> SqlQueriesAsync<T1, T2>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2>();
         }
 
@@ -545,7 +543,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3)> SqlQueriesAsync<T1, T2, T3>(this string sql, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
             return dataset.ToList<T1, T2, T3>();
         }
 
@@ -561,7 +559,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3)> SqlQueriesAsync<T1, T2, T3>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3>();
         }
 
@@ -577,7 +575,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4)> SqlQueriesAsync<T1, T2, T3, T4>(this string sql, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
             return dataset.ToList<T1, T2, T3, T4>();
         }
 
@@ -594,7 +592,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4)> SqlQueriesAsync<T1, T2, T3, T4>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4>();
         }
 
@@ -611,7 +609,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5)> SqlQueriesAsync<T1, T2, T3, T4, T5>(this string sql, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
             return dataset.ToList<T1, T2, T3, T4, T5>();
         }
 
@@ -629,7 +627,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5)> SqlQueriesAsync<T1, T2, T3, T4, T5>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5>();
         }
 
@@ -647,7 +645,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6)> SqlQueriesAsync<T1, T2, T3, T4, T5, T6>(this string sql, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
             return dataset.ToList<T1, T2, T3, T4, T5, T6>();
         }
 
@@ -666,7 +664,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6)> SqlQueriesAsync<T1, T2, T3, T4, T5, T6>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6>();
         }
 
@@ -685,7 +683,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7)> SqlQueriesAsync<T1, T2, T3, T4, T5, T6, T7>(this string sql, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
@@ -705,7 +703,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7)> SqlQueriesAsync<T1, T2, T3, T4, T5, T6, T7>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
@@ -725,7 +723,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8)> SqlQueriesAsync<T1, T2, T3, T4, T5, T6, T7, T8>(this string sql, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
@@ -746,7 +744,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8)> SqlQueriesAsync<T1, T2, T3, T4, T5, T6, T7, T8>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
@@ -760,7 +758,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T1></returns>
         public static async Task<List<T1>> SqlQueriesAsync<T1>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
             return dataset.ToList<T1>();
         }
 
@@ -775,7 +773,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2)> SqlQueriesAsync<T1, T2>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2>();
         }
 
@@ -791,7 +789,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3)> SqlQueriesAsync<T1, T2, T3>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3>();
         }
 
@@ -808,7 +806,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4)> SqlQueriesAsync<T1, T2, T3, T4>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4>();
         }
 
@@ -826,7 +824,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5)> SqlQueriesAsync<T1, T2, T3, T4, T5>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5>();
         }
 
@@ -845,7 +843,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6)> SqlQueriesAsync<T1, T2, T3, T4, T5, T6>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6>();
         }
 
@@ -865,7 +863,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7)> SqlQueriesAsync<T1, T2, T3, T4, T5, T6, T7>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
@@ -886,7 +884,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8)> SqlQueriesAsync<T1, T2, T3, T4, T5, T6, T7, T8>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
@@ -898,7 +896,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataTable</returns>
         public static DataTable SqlProcedureQuery(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteReader(procName, parameters, CommandType.StoredProcedure);
+            return GetSqlDatabase(ref procName).ExecuteReader(procName, parameters, CommandType.StoredProcedure);
         }
 
         /// <summary>
@@ -909,7 +907,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataTable</returns>
         public static DataTable SqlProcedureQuery(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteReader(procName, model, CommandType.StoredProcedure).dataTable;
+            return GetSqlDatabase(ref procName).ExecuteReader(procName, model, CommandType.StoredProcedure).dataTable;
         }
 
         /// <summary>
@@ -920,7 +918,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataTable</returns>
         public static Task<DataTable> SqlProcedureQueryAsync(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure);
+            return GetSqlDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure);
         }
 
         /// <summary>
@@ -932,7 +930,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataTable</returns>
         public static Task<DataTable> SqlProcedureQueryAsync(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            return GetSqlDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -944,7 +942,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataTable</returns>
         public static async Task<DataTable> SqlProcedureQueryAsync(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataTable, _) = await GetSqlRepositoryDatabase(ref procName).ExecuteReaderAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataTable, _) = await GetSqlDatabase(ref procName).ExecuteReaderAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataTable;
         }
 
@@ -956,7 +954,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T></returns>
         public static List<T> SqlProcedureQuery<T>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteReader(procName, parameters, CommandType.StoredProcedure).ToList<T>();
+            return GetSqlDatabase(ref procName).ExecuteReader(procName, parameters, CommandType.StoredProcedure).ToList<T>();
         }
 
         /// <summary>
@@ -967,7 +965,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T></returns>
         public static List<T> SqlProcedureQuery<T>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteReader(procName, model, CommandType.StoredProcedure).dataTable.ToList<T>();
+            return GetSqlDatabase(ref procName).ExecuteReader(procName, model, CommandType.StoredProcedure).dataTable.ToList<T>();
         }
 
         /// <summary>
@@ -978,7 +976,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T></returns>
         public static async Task<List<T>> SqlProcedureQueryAsync<T>(this string procName, params DbParameter[] parameters)
         {
-            var dataTable = await GetSqlRepositoryDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure);
+            var dataTable = await GetSqlDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure);
             return dataTable.ToList<T>();
         }
 
@@ -991,7 +989,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T></returns>
         public static async Task<List<T>> SqlProcedureQueryAsync<T>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataTable = await GetSqlRepositoryDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataTable = await GetSqlDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataTable.ToList<T>();
         }
 
@@ -1004,7 +1002,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T></returns>
         public static async Task<List<T>> SqlProcedureQueryAsync<T>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataTable, _) = await GetSqlRepositoryDatabase(ref procName).ExecuteReaderAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataTable, _) = await GetSqlDatabase(ref procName).ExecuteReaderAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataTable.ToList<T>();
         }
 
@@ -1016,7 +1014,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataSet</returns>
         public static DataSet SqlProcedureQueries(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure);
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure);
         }
 
         /// <summary>
@@ -1027,7 +1025,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataSet</returns>
         public static DataSet SqlProcedureQueries(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet;
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet;
         }
 
         /// <summary>
@@ -1038,7 +1036,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataSet</returns>
         public static Task<DataSet> SqlProcedureQueriesAsync(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
+            return GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
         }
 
         /// <summary>
@@ -1050,7 +1048,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataSet</returns>
         public static Task<DataSet> SqlProcedureQueriesAsync(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            return GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -1062,7 +1060,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataSet</returns>
         public static async Task<DataSet> SqlProcedureQueriesAsync(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataSet, _) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataSet, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataSet;
         }
 
@@ -1075,7 +1073,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T1></returns>
         public static List<T1> SqlProcedureQueries<T1>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1>();
         }
 
         /// <summary>
@@ -1088,7 +1086,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2) SqlProcedureQueries<T1, T2>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2>();
         }
 
         /// <summary>
@@ -1102,7 +1100,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3) SqlProcedureQueries<T1, T2, T3>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3>();
         }
 
         /// <summary>
@@ -1117,7 +1115,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4) SqlProcedureQueries<T1, T2, T3, T4>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4>();
         }
 
         /// <summary>
@@ -1133,7 +1131,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5) SqlProcedureQueries<T1, T2, T3, T4, T5>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4, T5>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4, T5>();
         }
 
         /// <summary>
@@ -1150,7 +1148,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6) SqlProcedureQueries<T1, T2, T3, T4, T5, T6>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4, T5, T6>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4, T5, T6>();
         }
 
         /// <summary>
@@ -1168,7 +1166,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7) SqlProcedureQueries<T1, T2, T3, T4, T5, T6, T7>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4, T5, T6, T7>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
         /// <summary>
@@ -1187,7 +1185,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8) SqlProcedureQueries<T1, T2, T3, T4, T5, T6, T7, T8>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
         /// <summary>
@@ -1199,7 +1197,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T1></returns>
         public static List<T1> SqlProcedureQueries<T1>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1>();
         }
 
         /// <summary>
@@ -1212,7 +1210,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2) SqlProcedureQueries<T1, T2>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2>();
         }
 
         /// <summary>
@@ -1226,7 +1224,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3) SqlProcedureQueries<T1, T2, T3>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3>();
         }
 
         /// <summary>
@@ -1241,7 +1239,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4) SqlProcedureQueries<T1, T2, T3, T4>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4>();
         }
 
         /// <summary>
@@ -1257,7 +1255,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5) SqlProcedureQueries<T1, T2, T3, T4, T5>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4, T5>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4, T5>();
         }
 
         /// <summary>
@@ -1274,7 +1272,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6) SqlProcedureQueries<T1, T2, T3, T4, T5, T6>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4, T5, T6>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4, T5, T6>();
         }
 
         /// <summary>
@@ -1292,7 +1290,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7) SqlProcedureQueries<T1, T2, T3, T4, T5, T6, T7>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4, T5, T6, T7>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
         /// <summary>
@@ -1311,7 +1309,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static (List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8) SqlProcedureQueries<T1, T2, T3, T4, T5, T6, T7, T8>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
+            return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
         /// <summary>
@@ -1323,7 +1321,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T1>></returns>
         public static async Task<List<T1>> SqlProcedureQueriesAsync<T1>(this string procName, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
             return dataset.ToList<T1>();
         }
 
@@ -1337,7 +1335,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T1>></returns>
         public static async Task<List<T1>> SqlProcedureQueriesAsync<T1>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1>();
         }
 
@@ -1351,7 +1349,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2)> SqlProcedureQueriesAsync<T1, T2>(this string procName, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
             return dataset.ToList<T1, T2>();
         }
 
@@ -1366,7 +1364,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2)> SqlProcedureQueriesAsync<T1, T2>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2>();
         }
 
@@ -1381,7 +1379,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3)> SqlProcedureQueriesAsync<T1, T2, T3>(this string procName, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
             return dataset.ToList<T1, T2, T3>();
         }
 
@@ -1397,7 +1395,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3)> SqlProcedureQueriesAsync<T1, T2, T3>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3>();
         }
 
@@ -1413,7 +1411,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4)> SqlProcedureQueriesAsync<T1, T2, T3, T4>(this string procName, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
             return dataset.ToList<T1, T2, T3, T4>();
         }
 
@@ -1430,7 +1428,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4)> SqlProcedureQueriesAsync<T1, T2, T3, T4>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4>();
         }
 
@@ -1447,7 +1445,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5>(this string procName, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
             return dataset.ToList<T1, T2, T3, T4, T5>();
         }
 
@@ -1465,7 +1463,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5>();
         }
 
@@ -1483,7 +1481,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5, T6>(this string procName, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
             return dataset.ToList<T1, T2, T3, T4, T5, T6>();
         }
 
@@ -1502,7 +1500,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5, T6>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6>();
         }
 
@@ -1521,7 +1519,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5, T6, T7>(this string procName, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
@@ -1541,7 +1539,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5, T6, T7>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
@@ -1561,7 +1559,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5, T6, T7, T8>(this string procName, params DbParameter[] parameters)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
@@ -1582,7 +1580,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5, T6, T7, T8>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var dataset = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
@@ -1596,7 +1594,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T1></returns>
         public static async Task<List<T1>> SqlProcedureQueriesAsync<T1>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1>();
         }
 
@@ -1611,7 +1609,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2)> SqlProcedureQueriesAsync<T1, T2>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2>();
         }
 
@@ -1627,7 +1625,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3)> SqlProcedureQueriesAsync<T1, T2, T3>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3>();
         }
 
@@ -1644,7 +1642,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4)> SqlProcedureQueriesAsync<T1, T2, T3, T4>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4>();
         }
 
@@ -1662,7 +1660,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5>();
         }
 
@@ -1681,7 +1679,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5, T6>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6>();
         }
 
@@ -1701,7 +1699,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5, T6, T7>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7>();
         }
 
@@ -1722,7 +1720,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>元组类型</returns>
         public static async Task<(List<T1> list1, List<T2> list2, List<T3> list3, List<T4> list4, List<T5> list5, List<T6> list6, List<T7> list7, List<T8> list8)> SqlProcedureQueriesAsync<T1, T2, T3, T4, T5, T6, T7, T8>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (dataset, _) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataset, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return dataset.ToList<T1, T2, T3, T4, T5, T6, T7, T8>();
         }
 
@@ -1734,7 +1732,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static object SqlProcedureScalar(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteScalar(procName, parameters, CommandType.StoredProcedure);
+            return GetSqlDatabase(ref procName).ExecuteScalar(procName, parameters, CommandType.StoredProcedure);
         }
 
         /// <summary>
@@ -1745,7 +1743,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static object SqlProcedureScalar(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteScalar(procName, model, CommandType.StoredProcedure).result;
+            return GetSqlDatabase(ref procName).ExecuteScalar(procName, model, CommandType.StoredProcedure).result;
         }
 
         /// <summary>
@@ -1756,7 +1754,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static Task<object> SqlProcedureScalarAsync(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteScalarAsync(procName, parameters, CommandType.StoredProcedure);
+            return GetSqlDatabase(ref procName).ExecuteScalarAsync(procName, parameters, CommandType.StoredProcedure);
         }
 
         /// <summary>
@@ -1768,7 +1766,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static Task<object> SqlProcedureScalarAsync(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteScalarAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            return GetSqlDatabase(ref procName).ExecuteScalarAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -1780,7 +1778,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static async Task<object> SqlProcedureScalarAsync(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (result, _) = await GetSqlRepositoryDatabase(ref procName).ExecuteScalarAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (result, _) = await GetSqlDatabase(ref procName).ExecuteScalarAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return result;
         }
 
@@ -1792,7 +1790,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static TResult SqlProcedureScalar<TResult>(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteScalar(procName, parameters, CommandType.StoredProcedure).Adapt<TResult>();
+            return GetSqlDatabase(ref procName).ExecuteScalar(procName, parameters, CommandType.StoredProcedure).Adapt<TResult>();
         }
 
         /// <summary>
@@ -1803,7 +1801,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static TResult SqlProcedureScalar<TResult>(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteScalar(procName, model, CommandType.StoredProcedure).result.Adapt<TResult>();
+            return GetSqlDatabase(ref procName).ExecuteScalar(procName, model, CommandType.StoredProcedure).result.Adapt<TResult>();
         }
 
         /// <summary>
@@ -1814,7 +1812,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static async Task<TResult> SqlProcedureScalarAsync<TResult>(this string procName, params DbParameter[] parameters)
         {
-            var result = await GetSqlRepositoryDatabase(ref procName).ExecuteScalarAsync(procName, parameters, CommandType.StoredProcedure);
+            var result = await GetSqlDatabase(ref procName).ExecuteScalarAsync(procName, parameters, CommandType.StoredProcedure);
             return result.Adapt<TResult>();
         }
 
@@ -1827,7 +1825,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static async Task<TResult> SqlProcedureScalarAsync<TResult>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var result = await GetSqlRepositoryDatabase(ref procName).ExecuteScalarAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var result = await GetSqlDatabase(ref procName).ExecuteScalarAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return result.Adapt<TResult>();
         }
 
@@ -1840,7 +1838,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static async Task<TResult> SqlProcedureScalarAsync<TResult>(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (result, _) = await GetSqlRepositoryDatabase(ref procName).ExecuteScalarAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (result, _) = await GetSqlDatabase(ref procName).ExecuteScalarAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return result.Adapt<TResult>();
         }
 
@@ -1852,7 +1850,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static int SqlProcedureNonQuery(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteNonQuery(procName, parameters, CommandType.StoredProcedure);
+            return GetSqlDatabase(ref procName).ExecuteNonQuery(procName, parameters, CommandType.StoredProcedure);
         }
 
         /// <summary>
@@ -1863,7 +1861,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static int SqlProcedureNonQuery(this string procName, object model)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteNonQuery(procName, model, CommandType.StoredProcedure).rowEffects;
+            return GetSqlDatabase(ref procName).ExecuteNonQuery(procName, model, CommandType.StoredProcedure).rowEffects;
         }
 
         /// <summary>
@@ -1874,7 +1872,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static Task<int> SqlProcedureNonQueryAsync(this string procName, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteNonQueryAsync(procName, parameters, CommandType.StoredProcedure);
+            return GetSqlDatabase(ref procName).ExecuteNonQueryAsync(procName, parameters, CommandType.StoredProcedure);
         }
 
         /// <summary>
@@ -1886,7 +1884,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static Task<int> SqlProcedureNonQueryAsync(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            return GetSqlRepositoryDatabase(ref procName).ExecuteNonQueryAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            return GetSqlDatabase(ref procName).ExecuteNonQueryAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -1898,7 +1896,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static async Task<int> SqlProcedureNonQueryAsync(this string procName, object model, CancellationToken cancellationToken = default)
         {
-            var (rowEffects, _) = await GetSqlRepositoryDatabase(ref procName).ExecuteNonQueryAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (rowEffects, _) = await GetSqlDatabase(ref procName).ExecuteNonQueryAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
             return rowEffects;
         }
 
@@ -1910,7 +1908,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static int SqlNonQuery(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteNonQuery(sql, parameters);
+            return GetSqlDatabase(ref sql).ExecuteNonQuery(sql, parameters);
         }
 
         /// <summary>
@@ -1921,7 +1919,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static int SqlNonQuery(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteNonQuery(sql, model).rowEffects;
+            return GetSqlDatabase(ref sql).ExecuteNonQuery(sql, model).rowEffects;
         }
 
         /// <summary>
@@ -1932,7 +1930,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static Task<int> SqlNonQueryAsync(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteNonQueryAsync(sql, parameters);
+            return GetSqlDatabase(ref sql).ExecuteNonQueryAsync(sql, parameters);
         }
 
         /// <summary>
@@ -1944,7 +1942,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static Task<int> SqlNonQueryAsync(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteNonQueryAsync(sql, parameters, cancellationToken: cancellationToken);
+            return GetSqlDatabase(ref sql).ExecuteNonQueryAsync(sql, parameters, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -1956,7 +1954,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>int</returns>
         public static async Task<int> SqlNonQueryAsync(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (rowEffects, _) = await GetSqlRepositoryDatabase(ref sql).ExecuteNonQueryAsync(sql, model, cancellationToken: cancellationToken);
+            var (rowEffects, _) = await GetSqlDatabase(ref sql).ExecuteNonQueryAsync(sql, model, cancellationToken: cancellationToken);
             return rowEffects;
         }
 
@@ -1968,7 +1966,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static object SqlScalar(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteScalar(sql, parameters);
+            return GetSqlDatabase(ref sql).ExecuteScalar(sql, parameters);
         }
 
         /// <summary>
@@ -1979,7 +1977,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static object SqlScalar(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteScalar(sql, model).result;
+            return GetSqlDatabase(ref sql).ExecuteScalar(sql, model).result;
         }
 
         /// <summary>
@@ -1990,7 +1988,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static Task<object> SqlScalarAsync(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteScalarAsync(sql, parameters);
+            return GetSqlDatabase(ref sql).ExecuteScalarAsync(sql, parameters);
         }
 
         /// <summary>
@@ -2002,7 +2000,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static Task<object> SqlScalarAsync(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteScalarAsync(sql, parameters, cancellationToken: cancellationToken);
+            return GetSqlDatabase(ref sql).ExecuteScalarAsync(sql, parameters, cancellationToken: cancellationToken);
         }
 
         /// <summary>
@@ -2014,7 +2012,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static async Task<object> SqlScalarAsync(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (result, _) = await GetSqlRepositoryDatabase(ref sql).ExecuteScalarAsync(sql, model, cancellationToken: cancellationToken);
+            var (result, _) = await GetSqlDatabase(ref sql).ExecuteScalarAsync(sql, model, cancellationToken: cancellationToken);
             return result;
         }
 
@@ -2026,7 +2024,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static TResult SqlScalar<TResult>(this string sql, params DbParameter[] parameters)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteScalar(sql, parameters).Adapt<TResult>();
+            return GetSqlDatabase(ref sql).ExecuteScalar(sql, parameters).Adapt<TResult>();
         }
 
         /// <summary>
@@ -2037,7 +2035,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static TResult SqlScalar<TResult>(this string sql, object model)
         {
-            return GetSqlRepositoryDatabase(ref sql).ExecuteScalar(sql, model).result.Adapt<TResult>();
+            return GetSqlDatabase(ref sql).ExecuteScalar(sql, model).result.Adapt<TResult>();
         }
 
         /// <summary>
@@ -2048,7 +2046,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static async Task<TResult> SqlScalarAsync<TResult>(this string sql, params DbParameter[] parameters)
         {
-            var result = await GetSqlRepositoryDatabase(ref sql).ExecuteScalarAsync(sql, parameters);
+            var result = await GetSqlDatabase(ref sql).ExecuteScalarAsync(sql, parameters);
             return result.Adapt<TResult>();
         }
 
@@ -2061,7 +2059,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static async Task<TResult> SqlScalarAsync<TResult>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var result = await GetSqlRepositoryDatabase(ref sql).ExecuteScalarAsync(sql, parameters, cancellationToken: cancellationToken);
+            var result = await GetSqlDatabase(ref sql).ExecuteScalarAsync(sql, parameters, cancellationToken: cancellationToken);
             return result.Adapt<TResult>();
         }
 
@@ -2074,7 +2072,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static async Task<TResult> SqlScalarAsync<TResult>(this string sql, object model, CancellationToken cancellationToken = default)
         {
-            var (result, _) = await GetSqlRepositoryDatabase(ref sql).ExecuteScalarAsync(sql, model, cancellationToken: cancellationToken);
+            var (result, _) = await GetSqlDatabase(ref sql).ExecuteScalarAsync(sql, model, cancellationToken: cancellationToken);
             return result.Adapt<TResult>();
         }
 
@@ -2089,7 +2087,7 @@ namespace Fur.DatabaseAccessor
             parameters ??= Array.Empty<DbParameter>();
 
             // 执行存储过程
-            var dataSet = GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure);
+            var dataSet = GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure);
 
             // 包装结果集
             return DbHelpers.WrapperProcedureOutput(parameters, dataSet);
@@ -2100,13 +2098,14 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="procName">存储过程名</param>
         /// <param name="parameters">命令参数</param>
+        /// <param name="cancellationToken">异步取消令牌</param>
         /// <returns>ProcedureOutput</returns>
         public static async Task<ProcedureOutputResult> SqlProcedureOutputAsync(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             parameters ??= Array.Empty<DbParameter>();
 
             // 执行存储过程
-            var dataSet = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataSet = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
 
             // 包装结果集
             return DbHelpers.WrapperProcedureOutput(parameters, dataSet);
@@ -2121,7 +2120,7 @@ namespace Fur.DatabaseAccessor
         public static ProcedureOutputResult SqlProcedureOutput(this string procName, object model)
         {
             // 执行存储过程
-            var (dataSet, parameters) = GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure);
+            var (dataSet, parameters) = GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure);
 
             // 包装结果集
             return DbHelpers.WrapperProcedureOutput(parameters, dataSet);
@@ -2132,11 +2131,12 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="procName">存储过程名</param>
         /// <param name="model">命令模型</param>
+        /// <param name="cancellationToken">异步取消令牌</param>
         /// <returns>ProcedureOutput</returns>
         public static async Task<ProcedureOutputResult> SqlProcedureOutputAsync(this string procName, object model, CancellationToken cancellationToken = default)
         {
             // 执行存储过程
-            var (dataSet, parameters) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataSet, parameters) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
 
             // 包装结果集
             return DbHelpers.WrapperProcedureOutput(parameters, dataSet);
@@ -2154,7 +2154,7 @@ namespace Fur.DatabaseAccessor
             parameters ??= Array.Empty<DbParameter>();
 
             // 执行存储过程
-            var dataSet = GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure);
+            var dataSet = GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure);
 
             // 包装结果集
             return DbHelpers.WrapperProcedureOutput<TResult>(parameters, dataSet);
@@ -2166,13 +2166,14 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="TResult">数据集结果</typeparam>
         /// <param name="procName">存储过程名</param>
         /// <param name="parameters">命令参数</param>
+        /// <param name="cancellationToken">异步取消令牌</param>
         /// <returns>ProcedureOutput</returns>
         public static async Task<ProcedureOutputResult<TResult>> SqlProcedureOutputAsync<TResult>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             parameters ??= Array.Empty<DbParameter>();
 
             // 执行存储过程
-            var dataSet = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var dataSet = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
 
             // 包装结果集
             return DbHelpers.WrapperProcedureOutput<TResult>(parameters, dataSet);
@@ -2188,7 +2189,7 @@ namespace Fur.DatabaseAccessor
         public static ProcedureOutputResult<TResult> SqlProcedureOutput<TResult>(this string procName, object model)
         {
             // 执行存储过程
-            var (dataSet, parameters) = GetSqlRepositoryDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure);
+            var (dataSet, parameters) = GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure);
 
             // 包装结果集
             return DbHelpers.WrapperProcedureOutput<TResult>(parameters, dataSet);
@@ -2200,11 +2201,12 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="TResult">数据集结果</typeparam>
         /// <param name="procName">存储过程名</param>
         /// <param name="model">命令模型</param>
+        /// <param name="cancellationToken">异步取消令牌</param>
         /// <returns>ProcedureOutput</returns>
         public static async Task<ProcedureOutputResult<TResult>> SqlProcedureOutputAsync<TResult>(this string procName, object model, CancellationToken cancellationToken = default)
         {
             // 执行存储过程
-            var (dataSet, parameters) = await GetSqlRepositoryDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
+            var (dataSet, parameters) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
 
             // 包装结果集
             return DbHelpers.WrapperProcedureOutput<TResult>(parameters, dataSet);
@@ -2218,7 +2220,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static object SqlFunctionScalar(this string funcName, params DbParameter[] parameters)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, parameters);
             return database.ExecuteScalar(sql, parameters);
         }
@@ -2231,7 +2233,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static object SqlFunctionScalar(this string funcName, object model)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, model);
             return database.ExecuteScalar(sql, model).result;
         }
@@ -2244,7 +2246,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>object</returns>
         public static Task<object> SqlFunctionScalarAsync(this string funcName, params DbParameter[] parameters)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, parameters);
             return database.ExecuteScalarAsync(sql, parameters);
         }
@@ -2254,10 +2256,11 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="funcName">函数名</param>
         /// <param name="parameters">命令参数</param>
+        /// <param name="cancellationToken">异步取消令牌</param>
         /// <returns>object</returns>
         public static Task<object> SqlFunctionScalarAsync(this string funcName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, parameters);
             return database.ExecuteScalarAsync(sql, parameters, cancellationToken: cancellationToken);
         }
@@ -2267,10 +2270,11 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="funcName">函数名</param>
         /// <param name="model">参数模型</param>
+        /// <param name="cancellationToken">异步取消令牌</param>
         /// <returns>object</returns>
         public static async Task<object> SqlFunctionScalarAsync(this string funcName, object model, CancellationToken cancellationToken = default)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, model);
             var (result, _) = await database.ExecuteScalarAsync(sql, model, cancellationToken: cancellationToken);
             return result;
@@ -2285,7 +2289,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static TResult SqlFunctionScalar<TResult>(this string funcName, params DbParameter[] parameters)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, parameters);
             return database.ExecuteScalar(sql, parameters).Adapt<TResult>();
         }
@@ -2299,7 +2303,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static TResult SqlFunctionScalar<TResult>(this string funcName, object model)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, model);
             return database.ExecuteScalar(sql, model).result.Adapt<TResult>();
         }
@@ -2313,7 +2317,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>TResult</returns>
         public static async Task<TResult> SqlFunctionScalarAsync<TResult>(this string funcName, params DbParameter[] parameters)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, parameters);
             var result = await database.ExecuteScalarAsync(sql, parameters);
             return result.Adapt<TResult>();
@@ -2325,10 +2329,11 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="TResult">返回值类型</typeparam>
         /// <param name="funcName">函数名</param>
         /// <param name="parameters">命令参数</param>
+        /// <param name="cancellationToken">异步取消令牌</param>
         /// <returns>TResult</returns>
         public static async Task<TResult> SqlFunctionScalarAsync<TResult>(this string funcName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, parameters);
             var result = await database.ExecuteScalarAsync(sql, parameters, cancellationToken: cancellationToken);
             return result.Adapt<TResult>();
@@ -2340,10 +2345,11 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="TResult">返回值类型</typeparam>
         /// <param name="funcName">函数名</param>
         /// <param name="model">参数模型</param>
+        /// <param name="cancellationToken">异步取消令牌</param>
         /// <returns>object</returns>
         public static async Task<TResult> SqlFunctionScalarAsync<TResult>(this string funcName, object model, CancellationToken cancellationToken = default)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Scalar, funcName, model);
             var (result, _) = await database.ExecuteScalarAsync(sql, model, cancellationToken: cancellationToken);
             return result.Adapt<TResult>();
@@ -2357,7 +2363,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataTable</returns>
         public static DataTable SqlFunctionQuery(this string funcName, params DbParameter[] parameters)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, parameters);
             return database.ExecuteReader(sql, parameters);
         }
@@ -2370,7 +2376,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>DataTable</returns>
         public static DataTable SqlFunctionQuery(this string funcName, object model)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, model);
             return database.ExecuteReader(sql, model).dataTable;
         }
@@ -2383,7 +2389,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<DataTable></returns>
         public static Task<DataTable> SqlFunctionQueryAsync(this string funcName, params DbParameter[] parameters)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, parameters);
             return database.ExecuteReaderAsync(sql, parameters);
         }
@@ -2397,7 +2403,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<DataTable></returns>
         public static Task<DataTable> SqlFunctionQueryAsync(this string funcName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, parameters);
             return database.ExecuteReaderAsync(sql, parameters, cancellationToken: cancellationToken);
         }
@@ -2411,7 +2417,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<DataTable></returns>
         public static async Task<DataTable> SqlFunctionQueryAsync(this string funcName, object model, CancellationToken cancellationToken = default)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, model);
             var (dataTable, _) = await database.ExecuteReaderAsync(sql, model, cancellationToken: cancellationToken);
             return dataTable;
@@ -2426,7 +2432,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T></returns>
         public static List<T> SqlFunctionQuery<T>(this string funcName, params DbParameter[] parameters)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, parameters);
             return database.ExecuteReader(sql, parameters).ToList<T>();
         }
@@ -2440,7 +2446,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>List<T></returns>
         public static List<T> SqlFunctionQuery<T>(this string funcName, object model)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, model);
             return database.ExecuteReader(sql, model).dataTable.ToList<T>();
         }
@@ -2454,7 +2460,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T>></returns>
         public static async Task<List<T>> SqlFunctionQueryAsync<T>(this string funcName, params DbParameter[] parameters)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, parameters);
             var dataTable = await database.ExecuteReaderAsync(sql, parameters);
             return dataTable.ToList<T>();
@@ -2470,7 +2476,7 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T>></returns>
         public static async Task<List<T>> SqlFunctionQueryAsync<T>(this string funcName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, parameters);
             var dataTable = await database.ExecuteReaderAsync(sql, parameters, cancellationToken: cancellationToken);
             return dataTable.ToList<T>();
@@ -2486,18 +2492,18 @@ namespace Fur.DatabaseAccessor
         /// <returns>Task<List<T>></returns>
         public static async Task<List<T>> SqlFunctionQueryAsync<T>(this string funcName, object model, CancellationToken cancellationToken = default)
         {
-            var database = GetSqlRepositoryDatabase(ref funcName);
+            var database = GetSqlDatabase(ref funcName);
             var sql = DbHelpers.GenerateFunctionSql(database.ProviderName, DbFunctionType.Table, funcName, model);
             var (dataTable, _) = await database.ExecuteReaderAsync(sql, model, cancellationToken: cancellationToken);
             return dataTable.ToList<T>();
         }
 
         /// <summary>
-        /// 获取 Sql 仓储数据库操作对象
+        /// 获取 Sql 数据库操作对象
         /// </summary>
         /// <param name="sql"></param>
         /// <returns></returns>
-        private static DatabaseFacade GetSqlRepositoryDatabase(ref string sql)
+        private static DatabaseFacade GetSqlDatabase(ref string sql)
         {
             // 数据库上下文定位器完整类型名称
             string dbContextLocatorFullName;
@@ -2510,7 +2516,7 @@ namespace Fur.DatabaseAccessor
 
             // 获取数据库上下文定位器类型
             var dbContextLocator = Penetrates.DbContextLocatorTypeCached.GetValueOrDefault(dbContextLocatorFullName)
-            ?? throw Oops.Oh("Failed to load \"{0}\" DbContextLocator Type.", dbContextLocatorFullName);
+            ?? throw new InvalidOperationException(string.Format("Failed to load \"{0}\" DbContextLocator Type.", dbContextLocatorFullName));
 
             // 创建Sql仓储
             var sqlRepositoryType = typeof(ISqlRepository<>).MakeGenericType(dbContextLocator);
@@ -2528,12 +2534,6 @@ namespace Fur.DatabaseAccessor
         static SqlExtensions()
         {
             dbContextLocatorSqlSplit = "-=>";
-            DbContextLocatorTypesCached = new ConcurrentDictionary<string, Type>();
         }
-
-        /// <summary>
-        /// 数据库上下文定位器缓存
-        /// </summary>
-        private static readonly ConcurrentDictionary<string, Type> DbContextLocatorTypesCached;
     }
 }
