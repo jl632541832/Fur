@@ -1,17 +1,4 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur.DependencyInjection;
+﻿using Fur.DependencyInjection;
 using Fur.DynamicApiController;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
@@ -29,6 +16,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
+using System.Web;
 
 namespace Fur.SpecificationDocument
 {
@@ -89,6 +77,22 @@ namespace Fur.SpecificationDocument
         {
             // 生成V2版本
             swaggerOptions.SerializeAsV2 = _specificationDocumentSettings.FormatAsV2 == true;
+
+            // 判断是否启用 Server
+            if (_specificationDocumentSettings.HideServers != true)
+            {
+                // 启动服务器 Servers
+                swaggerOptions.PreSerializeFilters.Add((swagger, request) =>
+                {
+                    // 默认 Server
+                    var servers = new List<OpenApiServer> {
+                        new OpenApiServer { Url = $"{request.Scheme}://{request.Host.Value}",Description="Default" }
+                    };
+                    servers.AddRange(_specificationDocumentSettings.Servers);
+
+                    swagger.Servers = servers;
+                });
+            }
         }
 
         /// <summary>
@@ -275,7 +279,7 @@ namespace Fur.SpecificationDocument
             {
                 var groupOpenApiInfo = GetGroupOpenApiInfo(group);
 
-                swaggerUIOptions.SwaggerEndpoint($"/swagger/{group}/swagger.json", groupOpenApiInfo?.Title ?? group);
+                swaggerUIOptions.SwaggerEndpoint($"/swagger/{HttpUtility.UrlEncode(group)}/swagger.json", groupOpenApiInfo?.Title ?? group);
             }
         }
 
@@ -296,7 +300,7 @@ namespace Fur.SpecificationDocument
         }
 
         /// <summary>
-        /// <see cref="GetControllerGroups(MethodInfo)"/> 缓存集合
+        /// 获取分组信息缓存集合
         /// </summary>
         private static readonly ConcurrentDictionary<string, SpecificationOpenApiInfo> GetGroupOpenApiInfoCached;
 
@@ -348,7 +352,7 @@ namespace Fur.SpecificationDocument
         }
 
         /// <summary>
-        /// <see cref="GetControllerGroups(MethodInfo)"/> 缓存集合
+        /// 获取控制器组缓存集合
         /// </summary>
         private static readonly ConcurrentDictionary<Type, IEnumerable<GroupOrder>> GetControllerGroupsCached;
 

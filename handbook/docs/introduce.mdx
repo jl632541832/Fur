@@ -43,7 +43,7 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 >
 > 所以，**`Fur`** 就诞生了。
 >
-> 之后就有了 **“小僧不才，略懂皮毛（Fur）。”** 广告语 和 **[chinadot.net](https://chinadot.net)** 域名。
+> 之后就有了 **“小僧不才，略懂皮毛（Fur）。”** 广告语 和 **[furos.cn](https://furos.cn)** 域名。
 
 ## 🍔 关于 LOGO
 
@@ -62,9 +62,14 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 ## 🍟 文档地址
 
 - 国内文档：[https://monksoul.gitee.io/fur/](https://monksoul.gitee.io/fur/)
-- 国外文档：[https://chinadot.net](https://chinadot.net)
+- 国外文档：[https://furos.cn](https://furos.cn)
 
-目前文档正在逐步完善中。
+**目前文档正在逐步完善中。**
+
+## 🥦 系列教程
+
+- Fur 使用例子：[https://gitee.com/monksoul/fur-samples](https://gitee.com/monksoul/fur-samples)
+- Fur 系列教程：[《学 .NET 5 从 Fur 开始》](https://gitee.com/monksoul/Fur/blob/main/tutorials) 系列
 
 ## 🌭 开源地址
 
@@ -72,14 +77,13 @@ import useBaseUrl from "@docusaurus/useBaseUrl";
 - GitHub：[https://github.com/monksoul/Fur](https://github.com/monksoul/Fur)
 - Docker：[https://hub.docker.com/r/monksoul/fur](https://hub.docker.com/r/monksoul/fur)
 - Nuget：[https://www.nuget.org/packages/Fur](https://www.nuget.org/packages/Fur)
-- 博客园：[https://www.cnblogs.com/dotnetchina](https://www.cnblogs.com/dotnetchina)
 
 ## 🍿 Docker 镜像
 
 - `Docker Hub` 线上镜像
 
 ```shell
-docker run --name fur -p 5000:80 monksoul/fur:v1.0.0-rc.final.19
+docker run --name fur -p 5000:80 monksoul/fur:v1.0.0-rc.final.84
 ```
 
 - `手动` 打包镜像
@@ -87,14 +91,22 @@ docker run --name fur -p 5000:80 monksoul/fur:v1.0.0-rc.final.19
 打开 `CMD/Shell/PowerShell` 进入 `Fur` 项目根目录打包 `Fur` 镜像：
 
 ```shell
-docker build -t fur:v1.0.0-rc.final.19 .
+docker build -t fur:v1.0.0-rc.final.84 .
 ```
 
 打包成功后，直接 `docker run`：
 
 ```shell
-docker run --name fur -p 5000:80 fur:v1.0.0-rc.final.19
+docker run --name fur -p 5000:80 fur:v1.0.0-rc.final.84
 ```
+
+## 🥜 Fur 官方包
+
+| 包类型                                                                                                                                      | 名称                                    | 版本               | 描述                            |
+| ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------ | ------------------------------- |
+| [![nuget](https://img.shields.io/badge/Nuget-1.0.0--rc.final-blue)](https://www.nuget.org/packages/Fur)                                     | Fur                                     | v1.0.0-rc.final.50 | Fur 总包                        |
+| [![nuget](https://img.shields.io/badge/Nuget-1.0.0--rc.final-blue)](https://www.nuget.org/packages/Fur.Extras.Authentication.JwtBearer)     | Fur.Extras.Authentication.JwtBearer     | v1.0.0-rc.final.50 | Fur Jwt 拓展包                  |
+| [![nuget](https://img.shields.io/badge/Nuget-1.0.0--rc.final-blue)](https://www.nuget.org/packages/Fur.Extras.DependencyModel.CodeAnalysis) | Fur.Extras.DependencyModel.CodeAnalysis | 1.0.0-rc.1         | Fur 程序集扫描和动态编译 拓展包 |
 
 ## 🍎 框架特点
 
@@ -169,7 +181,7 @@ docker run --name fur -p 5000:80 fur:v1.0.0-rc.final.19
 
 ## 🍚 关于作者
 
-一个拥有 12 年开发经验 `.NETer`。喜欢分享，喜欢新技术，在互联网多个技术领域皆有涉猎。
+一个拥有 12 年开发经验 `.NETer`。喜欢分享，喜欢新技术，在互联网多个技术领域皆有涉猎，百签 MVP/FVC 专家，同时多次获得开源中国 Gitee 授予 GVP 证书。
 
 ## 🍤 项目成员
 
@@ -419,6 +431,9 @@ docker run --name fur -p 5000:80 fur:v1.0.0-rc.final.19
 | 😮 木木 Woody   | **10**                | 感谢您的开源项目！                           |
 | 😚 Joker Hou    | **QQ 超级会员一个月** |                                              |
 | 🤠 ccdfz        | **QQ 专属红包 199**   |                                              |
+| 🌝 天夫李总     | **支付宝 6666**       | Fur 非常有意思，持续关注                     |
+| 😝 六尘子       | **微信红包 199**      | 公司已经使用，小小敬意                       |
+| 🤠 ccdfz        | **QQ 专属红包 200**   | 赞助一根内存条                               |
 
 非常感谢您们的支持，正是因为您们，中国开源才可以越走越远，`Fur` 越走越远。
 
@@ -432,4 +447,4 @@ docker run --name fur -p 5000:80 fur:v1.0.0-rc.final.19
 
 ## 🧆 友情链接
 
-👉 **[Fur](https://gitee.com/monksoul/Fur)** 👉 **[SqlSugar](https://github.com/sunkaixuan/SqlSugar)** 👉 **[Layx](https://gitee.com/monksoul/LayX)** 👉 **[t-io](https://gitee.com/tywo45/t-io)** 👉 **[ThinkPHP](http://www.thinkphp.cn/)** 👉 **[Hutool](https://hutool.cn/)** 👉 **[BootstrapAdmin](https://gitee.com/LongbowEnterprise/BootstrapAdmin)** 👉 **[BootstrapBlazor](https://blazor.sdgxgz.com/)**
+👉 **[Fur](https://gitee.com/monksoul/Fur)** 👉 **[SqlSugar](https://github.com/sunkaixuan/SqlSugar)** 👉 **[Layx](https://gitee.com/monksoul/LayX)** 👉 **[t-io](https://gitee.com/tywo45/t-io)** 👉 **[ThinkPHP](http://www.thinkphp.cn/)** 👉 **[Hutool](https://hutool.cn/)** 👉 **[BootstrapAdmin](https://gitee.com/LongbowEnterprise/BootstrapAdmin)** 👉 **[BootstrapBlazor](https://blazor.sdgxgz.com/)** 👉 **[IoTSharp](https://gitee.com/IoTSharp/IoTSharp)**

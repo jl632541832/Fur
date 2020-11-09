@@ -1,5 +1,4 @@
-﻿using Fur.UnifyResult;
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -11,10 +10,12 @@ namespace Fur.Web.Core
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            // 注册 JWT 授权
+            services.AddJwt<JwtHandler>();
+
             services.AddCorsAccessor();
 
-            services.AddControllersWithViews().AddInject()
-                .AddUnifyResult<RESTfulResult, RESTfulResultProvider>();
+            services.AddControllersWithViews().AddInjectWithUnifyResult();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
@@ -23,6 +24,9 @@ namespace Fur.Web.Core
             {
                 app.UseDeveloperExceptionPage();
             }
+
+            // 添加规范化结果状态码，需要在这里注册
+            //app.UseUnifyResultStatusCodes();
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();

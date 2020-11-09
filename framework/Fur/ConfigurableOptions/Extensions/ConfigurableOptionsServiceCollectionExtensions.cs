@@ -1,17 +1,4 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur;
+﻿using Fur;
 using Fur.ConfigurableOptions;
 using Fur.DependencyInjection;
 using Microsoft.Extensions.Configuration;
@@ -35,7 +22,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <typeparam name="TOptions">选项类型</typeparam>
         /// <param name="services">服务集合</param>
-        /// <param name="options">选项实例</param>
         /// <returns>服务集合</returns>
         public static IServiceCollection AddConfigurableOptions<TOptions>(this IServiceCollection services)
             where TOptions : class, IConfigurableOptions
@@ -47,7 +33,8 @@ namespace Microsoft.Extensions.DependencyInjection
             var jsonKey = GetOptionsJsonKey(optionsSettings, optionsType);
 
             // 配置选项（含验证信息）
-            var optionsConfiguration = App.Configuration.GetSection(jsonKey);
+            var configurationRoot = App.Configuration;
+            var optionsConfiguration = configurationRoot.GetSection(jsonKey);
 
             // 配置选项监听
             if (typeof(IConfigurableOptionsListener<TOptions>).IsAssignableFrom(optionsType))
@@ -55,7 +42,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var onListenerMethod = optionsType.GetMethod(nameof(IConfigurableOptionsListener<TOptions>.OnListener));
                 if (onListenerMethod != null)
                 {
-                    ChangeToken.OnChange(() => optionsConfiguration.GetReloadToken(), () =>
+                    ChangeToken.OnChange(() => configurationRoot.GetReloadToken(), () =>
                     {
                         var options = optionsConfiguration.Get<TOptions>();
                         onListenerMethod.Invoke(options, new object[] { options, optionsConfiguration });
@@ -64,7 +51,10 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddOptions<TOptions>()
-                .Bind(optionsConfiguration)
+                .Bind(optionsConfiguration, options =>
+                {
+                    options.BindNonPublicProperties = true; // 绑定私有变量
+                })
                 .ValidateDataAnnotations();
 
             // 配置复杂验证后后期配置

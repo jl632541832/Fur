@@ -1,23 +1,9 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur.DependencyInjection;
+﻿using Fur.DependencyInjection;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.EntityFrameworkCore.Storage;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using System.Transactions;
 
 namespace Fur.DatabaseAccessor
 {
@@ -68,76 +54,86 @@ namespace Fur.DatabaseAccessor
             var actionDescriptor = context.ActionDescriptor as ControllerActionDescriptor;
             var method = actionDescriptor.MethodInfo;
 
-            TransactionScope transaction = null;
-            var isSupportTransactionScope = true;
-            var disabledTransact = false;
-
-            // 如果没有在构造函数中初始化上下文，则跳过
-            var dbContexts = _dbContextPool.GetDbContexts();
-            if (!dbContexts.Any()) goto Continue;
-
-            // 工作单元特性
-            UnitOfWorkAttribute unitOfWorkAttribute = null;
-
-            // 判断是否禁用了工作单元
-            if (method.IsDefined(typeof(UnitOfWorkAttribute), true))
+            // 判断是否贴有工作单元特性
+            if (!method.IsDefined(typeof(UnitOfWorkAttribute), true))
             {
-                unitOfWorkAttribute = method.GetCustomAttribute<UnitOfWorkAttribute>(true);
-                if (!unitOfWorkAttribute.Enabled)
-                {
-                    App.PrintToMiniProfiler("UnitOfWork", "Disabled !");
-                    await next();
-                    return;
-                }
+                // 调用方法
+                var resultContext = await next();
+
+                // 判断是否异常
+                if (resultContext.Exception == null) await _dbContextPool.SavePoolNowAsync();
             }
-
-            // 如果方法贴了 [NonTransact] 则跳过事务
-            disabledTransact = method.IsDefined(typeof(NonTransactAttribute), true);
-
-            // 打印验禁止事务信息
-            if (disabledTransact) App.PrintToMiniProfiler(MiniProfilerCategory, "Disabled !");
-
-            // 判断是否支持环境事务
-            isSupportTransactionScope = !dbContexts.Any(u => DbProvider.NotSupportTransactionScopeDatabase.Contains(u.Database.ProviderName));
-
-            if (isSupportTransactionScope && !disabledTransact)
+            else
             {
                 // 打印事务开始消息
                 App.PrintToMiniProfiler(MiniProfilerCategory, "Beginning");
 
-                // 获取工作单元特性
-                unitOfWorkAttribute ??= method.GetCustomAttribute<UnitOfWorkAttribute>() ?? new UnitOfWorkAttribute();
+                var dbContexts = _dbContextPool.GetDbContexts();
+                IDbContextTransaction dbContextTransaction;
 
-                // 开启分布式事务
-                transaction = new TransactionScope(unitOfWorkAttribute.ScopeOption
-              , new TransactionOptions { IsolationLevel = unitOfWorkAttribute.IsolationLevel }
-              , unitOfWorkAttribute.AsyncFlowOption);
-            }
-            // 打印不支持事务
-            else if (!isSupportTransactionScope && !disabledTransact) { App.PrintToMiniProfiler(MiniProfilerCategory, "NotSupported !"); }
-
-        // 继续执行
-        Continue: var resultContext = await next();
-
-            // 判断是否出现异常
-            if (resultContext.Exception == null)
-            {
-                // 将所有上下文提交事务
-                var hasChangesCount = await _dbContextPool.SavePoolNowAsync();
-
-                if (isSupportTransactionScope && !disabledTransact)
+                // 判断 dbContextPool 中是否包含DbContext，如果是，则使用第一个数据库上下文开启事务，并应用于其他数据库上下文
+                if (dbContexts.Any())
                 {
-                    transaction?.Complete();
-                    transaction?.Dispose();
+                    var firstDbContext = dbContexts.First();
 
-                    // 打印事务提交消息
-                    App.PrintToMiniProfiler(MiniProfilerCategory, "Completed", $"Transaction Completed! Has {hasChangesCount} DbContext Changes.");
+                    // 开启事务
+                    dbContextTransaction = await firstDbContext.Database.BeginTransactionAsync();
+                    await _dbContextPool.SetTransactionSharedToDbContextAsync(1, dbContextTransaction.GetDbTransaction());
                 }
-            }
-            else
-            {
-                // 打印事务回滚消息
-                if (isSupportTransactionScope && !disabledTransact) App.PrintToMiniProfiler(MiniProfilerCategory, "Rollback", isError: true);
+                // 创建临时数据库上下文
+                else
+                {
+                    var newDbContext = Db.GetRequestDbContext(Penetrates.DbContextWithLocatorCached.Keys.First());
+                    await _dbContextPool.AddToPoolAsync(newDbContext);
+
+                    // 开启事务
+                    dbContextTransaction = await newDbContext.Database.BeginTransactionAsync();
+                    await _dbContextPool.SetTransactionSharedToDbContextAsync(1, dbContextTransaction.GetDbTransaction());
+                }
+
+                // 调用方法
+                var resultContext = await next();
+
+                // 判断是否异常
+
+                if (resultContext.Exception == null)
+                {
+                    try
+                    {
+                        // 将所有数据库上下文修改 SaveChanges();
+                        var hasChangesCount = await _dbContextPool.SavePoolNowAsync();
+
+                        // 提交共享事务
+                        await dbContextTransaction.CommitAsync();
+
+                        // 打印事务提交消息
+                        App.PrintToMiniProfiler(MiniProfilerCategory, "Completed", $"Transaction Completed! Has {hasChangesCount} DbContext Changes.");
+                    }
+                    catch
+                    {
+                        // 回滚事务
+                        await dbContextTransaction.RollbackAsync();
+
+                        // 打印事务回滚消息
+                        App.PrintToMiniProfiler(MiniProfilerCategory, "Rollback", isError: true);
+
+                        throw;
+                    }
+                    finally
+                    {
+                        await dbContextTransaction.DisposeAsync();
+                    }
+                }
+                else
+                {
+                    // 回滚事务
+                    await dbContextTransaction.RollbackAsync();
+
+                    // 打印事务回滚消息
+                    App.PrintToMiniProfiler(MiniProfilerCategory, "Rollback", isError: true);
+                }
+
+                await dbContextTransaction.DisposeAsync();
             }
         }
     }

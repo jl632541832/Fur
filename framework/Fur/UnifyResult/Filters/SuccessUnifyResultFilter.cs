@@ -1,21 +1,7 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur.DependencyInjection;
+﻿using Fur.DependencyInjection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
@@ -69,12 +55,15 @@ namespace Fur.UnifyResult
 
             var actionExecutedContext = await next();
 
-            // 处理规范化结果
-            var unifyResult = _serviceProvider.GetService<IUnifyResultProvider>();
-            if (unifyResult != null && context.Result == null)
+            // 如果没有异常再执行
+            if (actionExecutedContext.Exception == null && !UnifyResultContext.IsSkipOnSuccessUnifyHandler(actionDescriptor.MethodInfo, out var unifyResult))
             {
-                var result = unifyResult.OnSuccessed(actionExecutedContext);
-                if (result != null) actionExecutedContext.Result = result;
+                // 处理规范化结果
+                if (unifyResult != null && context.Result == null)
+                {
+                    var result = unifyResult.OnSuccessed(actionExecutedContext);
+                    if (result != null) actionExecutedContext.Result = result;
+                }
             }
         }
     }

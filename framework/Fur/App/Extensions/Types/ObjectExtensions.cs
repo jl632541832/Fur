@@ -1,21 +1,6 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur.DependencyInjection;
+﻿using Fur.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -64,37 +49,6 @@ namespace Fur
             }
 
             return dic;
-        }
-
-        /// <summary>
-        /// 转换值到为指定类型
-        /// </summary>
-        /// <param name="value">值</param>
-        /// <param name="type">最终类型</param>
-        /// <returns>object</returns>
-        internal static object ChangeType(this object value, Type type)
-        {
-            // 如果值为默认值，则返回默认值
-            if (value == null || (value.GetType().IsValueType && (value.Equals(0) || value.Equals(Guid.Empty)))) return default;
-
-            // 属性真实类型
-            Type underlyingType = null;
-
-            // 判断属性类型是否是可空类型
-            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Nullable<>))
-            {
-                underlyingType = new NullableConverter(type).UnderlyingType;
-            }
-            underlyingType ??= type;
-
-            // 枚举类型处理
-            if (typeof(Enum).IsAssignableFrom(underlyingType))
-            {
-                return Enum.Parse(underlyingType, value.ToString());
-            }
-
-            // 执行转换
-            return Convert.ChangeType(value, underlyingType);
         }
 
         /// <summary>
@@ -154,24 +108,6 @@ namespace Fur
         }
 
         /// <summary>
-        /// 将对象转成动态类型
-        /// </summary>
-        /// <param name="obj"></param>
-        /// <returns></returns>
-        internal static ExpandoObject ToExpando(this object obj)
-        {
-            var expando = new ExpandoObject();
-            IDictionary<string, object> dictionary = expando;
-
-            foreach (var property in obj.GetType().GetProperties())
-            {
-                dictionary.Add(property.Name, property.GetValue(obj));
-            }
-
-            return expando;
-        }
-
-        /// <summary>
         /// 判断是否是匿名类型
         /// </summary>
         /// <param name="obj">对象</param>
@@ -184,6 +120,49 @@ namespace Fur
                    && type.IsGenericType && type.Name.Contains("AnonymousType")
                    && (type.Name.StartsWith("<>") || type.Name.StartsWith("VB$"))
                    && type.Attributes.HasFlag(TypeAttributes.NotPublic);
+        }
+
+        /// <summary>
+        /// 获取方法真实返回类型
+        /// </summary>
+        /// <param name="method"></param>
+        /// <returns></returns>
+        internal static Type GetMethodRealReturnType(this MethodInfo method)
+        {
+            // 判断是否是异步方法
+            var isAsyncMethod = method.IsAsync();
+
+            // 获取类型返回值并处理 Task 和 Task<T> 类型返回值
+            var returnType = method.ReturnType;
+            return isAsyncMethod ? (returnType.GenericTypeArguments.FirstOrDefault() ?? typeof(void)) : returnType;
+        }
+
+        /// <summary>
+        /// 获取两个字符串的相似度
+        /// </summary>
+        /// <param name="sourceString"></param>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        internal static decimal GetSimilarityWith(this string sourceString, string str)
+        {
+            decimal Kq = 2, Kr = 1, Ks = 1;
+            char[] ss = sourceString.ToCharArray(), st = str.ToCharArray();
+
+            //获取交集数量
+            int q = ss.Intersect(st).Count(), s = ss.Length - q, r = st.Length - q;
+
+            return Kq * q / (Kq * q + Kr * r + Ks * s);
+        }
+
+        /// <summary>
+        /// 返回异步类型
+        /// </summary>
+        /// <param name="obj"></param>
+        /// <param name="realType"></param>
+        /// <returns></returns>
+        internal static object ToTaskResult(this object obj, Type realType)
+        {
+            return typeof(Task).GetMethod(nameof(Task.FromResult)).MakeGenericMethod(realType).Invoke(null, new object[] { obj });
         }
     }
 }

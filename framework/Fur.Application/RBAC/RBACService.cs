@@ -1,14 +1,14 @@
 ﻿using Fur.Authorization;
 using Fur.Core;
 using Fur.DatabaseAccessor;
+using Fur.DataEncryption;
 using Fur.DynamicApiController;
 using Fur.FriendlyException;
-using Fur.LinqBuilder;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -19,7 +19,7 @@ namespace Fur.Application
     /// <summary>
     /// 角色管理服务
     /// </summary>
-    [ApiDescriptionSettings("角色管理")]
+    [AppAuthorize, ApiDescriptionSettings("角色管理")]
     public class RBACService : IDynamicApiController
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
@@ -57,28 +57,28 @@ namespace Fur.Application
         public LoginOutput Login(LoginInput input)
         {
             // 验证用户名和密码
-            var user = _userRepository.FirstOrDefault(u => u.Account.Equals(input.Account) && u.Password.Equals(input.Password)) ?? throw Oops.Oh(1000);
+            var user = _userRepository.FirstOrDefault(u => u.Account.Equals(input.Account) && u.Password.Equals(input.Password), false) ?? throw Oops.Oh(1000);
 
             var output = user.Adapt<LoginOutput>();
 
             // 生成 token
             var jwtSettings = App.GetOptions<JWTSettingsOptions>();
-            var datetimeOffset = new DateTimeOffset(DateTime.Now);
+            var datetimeOffset = DateTimeOffset.UtcNow;
 
-            output.AccessToken = JWTEncryption.Encrypt(jwtSettings.IssuerSigningKey, new JObject()
+            output.AccessToken = JWTEncryption.Encrypt(jwtSettings.IssuerSigningKey, new Dictionary<string, object>()
             {
                 { "UserId", user.Id },  // 存储Id
                 { "Account",user.Account }, // 存储用户名
 
                 { JwtRegisteredClaimNames.Iat, datetimeOffset.ToUnixTimeSeconds() },
                 { JwtRegisteredClaimNames.Nbf, datetimeOffset.ToUnixTimeSeconds() },
-                { JwtRegisteredClaimNames.Exp, new DateTimeOffset(DateTime.Now.AddSeconds(jwtSettings.ExpiredTime.Value*60)).ToUnixTimeSeconds() },
+                { JwtRegisteredClaimNames.Exp, DateTimeOffset.UtcNow.AddSeconds(jwtSettings.ExpiredTime.Value*60).ToUnixTimeSeconds() },
                 { JwtRegisteredClaimNames.Iss, jwtSettings.ValidIssuer},
                 { JwtRegisteredClaimNames.Aud, jwtSettings.ValidAudience }
             });
 
             // 设置 Swagger 刷新自动授权
-            _httpContextAccessor.HttpContext.Response.Headers["access-token"] = output.AccessToken;
+            _httpContextAccessor.SigninToSwagger(output.AccessToken);
 
             return output;
         }
@@ -93,6 +93,7 @@ namespace Fur.Application
             var userId = _authorizationManager.GetUserId<int>();
 
             var roles = _userRepository
+                .DetachedEntities
                 .Include(u => u.Roles)
                 .Where(u => u.Id == userId)
                 .SelectMany(u => u.Roles)
@@ -112,7 +113,7 @@ namespace Fur.Application
             var userId = _authorizationManager.GetUserId<int>();
 
             var securities = _userRepository
-                .Include(u => u.Roles)
+                .Include(u => u.Roles, false)
                     .ThenInclude(u => u.Securities)
                 .Where(u => u.Id == userId)
                 .SelectMany(u => u.Roles
@@ -128,7 +129,7 @@ namespace Fur.Application
         [SecurityDefine(SecurityConst.GetRoles)]
         public List<RoleDto> GetRoles()
         {
-            return _roleRepository.AsEnumerable().Adapt<List<RoleDto>>();
+            return _roleRepository.AsEnumerable(false).Adapt<List<RoleDto>>();
         }
 
         /// <summary>
@@ -150,7 +151,7 @@ namespace Fur.Application
             var userId = _authorizationManager.GetUserId<int>();
 
             roleIds ??= Array.Empty<int>();
-            _userRoleRepository.Delete(_userRoleRepository.Where(u => u.UserId == userId).ToList());
+            _userRoleRepository.Delete(_userRoleRepository.Where(u => u.UserId == userId, false).ToList());
 
             var list = new List<UserRole>();
             foreach (var roleid in roleIds)
@@ -167,7 +168,7 @@ namespace Fur.Application
         [AllowAnonymous]
         public List<SecurityDto> GetSecurities()
         {
-            return _securityRepository.AsEnumerable().Adapt<List<SecurityDto>>();
+            return _securityRepository.AsEnumerable(false).Adapt<List<SecurityDto>>();
         }
 
         /// <summary>
@@ -177,7 +178,7 @@ namespace Fur.Application
         public void GiveRoleSecurity(int roleId, int[] securityIds)
         {
             securityIds ??= Array.Empty<int>();
-            _roleSecurityRepository.Delete(_roleSecurityRepository.Where(u => u.RoleId == roleId).ToList());
+            _roleSecurityRepository.Delete(_roleSecurityRepository.Where(u => u.RoleId == roleId, false).ToList());
 
             var list = new List<RoleSecurity>();
             foreach (var securityId in securityIds)

@@ -2,13 +2,13 @@
 using Fur.Core;
 using Fur.DatabaseAccessor;
 using Fur.DynamicApiController;
-using Fur.LinqBuilder;
 using Mapster;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Fur.Application
@@ -51,7 +51,7 @@ namespace Fur.Application
         /// <returns></returns>
         public async Task Update(PersonInputDto input)
         {
-            var person = await _personRepository.Entities.Include(u => u.PersonDetail)
+            var person = await _personRepository.Include(u => u.PersonDetail, false)
                                                                                      .Include(u => u.Childrens)
                                                                                      .Include(u => u.Posts)
                                                                                      .SingleAsync(u => u.Id == input.Id.Value);
@@ -87,10 +87,9 @@ namespace Fur.Application
         /// 查询所有
         /// </summary>
         /// <returns></returns>
-        [NonTransact]
         public async Task<List<PersonDto>> GetAll()
         {
-            var persons = _personRepository.AsQueryable()
+            var persons = _personRepository.AsQueryable(false)
                                                                 .ProjectToType<PersonDto>();
             return await persons.ToListAsync();
         }
@@ -101,10 +100,9 @@ namespace Fur.Application
         /// <param name="pageIndex"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        [NonTransact]
         public async Task<PagedList<PersonDto>> GetAllByPage(int pageIndex = 1, int pageSize = 10)
         {
-            var pageResult = _personRepository.AsQueryable()
+            var pageResult = _personRepository.AsQueryable(false)
                                                                      .ProjectToType<PersonDto>();
 
             return await pageResult.ToPagedListAsync(pageIndex, pageSize);
@@ -116,10 +114,9 @@ namespace Fur.Application
         /// <param name="name"></param>
         /// <param name="age"></param>
         /// <returns></returns>
-        [NonTransact]
         public async Task<List<PersonDto>> Search([FromQuery] string name, [FromQuery] int age)
         {
-            var persons = _personRepository.Where(!string.IsNullOrEmpty(name), u => u.Name.Contains(name))
+            var persons = _personRepository.Where(!string.IsNullOrEmpty(name), u => u.Name.Contains(name), false)
                                                                 .Where(age > 18, u => u.Age > 18)
                                                                 .ProjectToType<PersonDto>();
 

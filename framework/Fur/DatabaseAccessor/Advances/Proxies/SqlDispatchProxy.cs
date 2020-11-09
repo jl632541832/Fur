@@ -1,17 +1,4 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur.DependencyInjection;
+﻿using Fur.DependencyInjection;
 using Mapster;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -97,7 +84,7 @@ namespace Fur.DatabaseAccessor
                     : database.DataAdapterFillAsync(sql, parameterModel, commandType).GetAwaiter().GetResult();
 
                 var result = ConvertValueTuple(returnType, dataSet);
-                return !isAsync ? result : Task.FromResult(result);
+                return !isAsync ? result : result.ToTaskResult(returnType);
             }
             // 处理 基元类型 返回值
             else if (returnType.IsRichPrimitive())
@@ -106,7 +93,7 @@ namespace Fur.DatabaseAccessor
                     ? database.ExecuteScalar(sql, parameterModel, commandType)
                     : database.ExecuteScalarAsync(sql, parameterModel, commandType).GetAwaiter().GetResult();
 
-                return !isAsync ? result : Task.FromResult(result);
+                return !isAsync ? result : result.ToTaskResult(returnType);
             }
             // 处理 存储过程带输出类型 返回值
             else if (returnType == typeof(ProcedureOutputResult) || (returnType.IsGenericType && typeof(ProcedureOutputResult<>).IsAssignableFrom(returnType.GetGenericTypeDefinition())))
@@ -116,7 +103,7 @@ namespace Fur.DatabaseAccessor
                     : database.DataAdapterFillAsync(sql, parameterModel, commandType).GetAwaiter().GetResult();
 
                 var result = ConvertProcedureOutputResult(returnType, dbParameters, dataSet);
-                return !isAsync ? result : Task.FromResult(result);
+                return !isAsync ? result : result.ToTaskResult(returnType);
             }
             else
             {
@@ -130,7 +117,7 @@ namespace Fur.DatabaseAccessor
                 {
                     var list = dataTable.ToList(returnType);
                     var result = list.Adapt(list.GetType(), returnType);
-                    return !isAsync ? result : Task.FromResult(result);
+                    return !isAsync ? result : result.ToTaskResult(returnType);
                 }
             }
         }
@@ -183,12 +170,8 @@ namespace Fur.DatabaseAccessor
             // 获取 Sql 代理特性
             var sqlProxyAttribute = method.GetCustomAttribute<SqlProxyAttribute>(true);
 
-            // 判断是否是异步方法
-            var isAsyncMethod = method.IsAsync();
-
-            // 获取类型返回值并处理 Task 和 Task<T> 类型返回值
-            var returnType = method.ReturnType;
-            returnType = isAsyncMethod ? (returnType.GenericTypeArguments.FirstOrDefault() ?? typeof(void)) : returnType;
+            // 获取方法真实返回值类型
+            var returnType = method.GetMethodRealReturnType();
 
             // 获取数据库上下文
             var dbContext = GetDbContext(sqlProxyAttribute.DbContextLocator);
@@ -228,7 +211,7 @@ namespace Fur.DatabaseAccessor
                 ParameterModel = parameters,
                 DbContext = dbContext,
                 ReturnType = returnType,
-                IsAsync = isAsyncMethod,
+                IsAsync = method.IsAsync(),
                 CommandType = commandType,
                 FinalSql = finalSql
             };

@@ -1,17 +1,5 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur.DependencyInjection;
+﻿using Fur.DependencyInjection;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -28,6 +16,11 @@ namespace Fur.DataValidation
     [SkipScan]
     public static class DataValidator
     {
+        /// <summary>
+        /// MiniProfiler 分类名
+        /// </summary>
+        private const string MiniProfilerCategory = "http";
+
         /// <summary>
         /// 所有验证类型
         /// </summary>
@@ -73,7 +66,8 @@ namespace Fur.DataValidation
             if (obj.GetType().IsDefined(typeof(NonValidationAttribute), true))
                 return new DataValidationResult
                 {
-                    IsValid = true
+                    IsValid = true,
+                    MemberOrValue = obj
                 };
 
             // 存储验证结果
@@ -84,7 +78,8 @@ namespace Fur.DataValidation
             return new DataValidationResult
             {
                 IsValid = isValid,
-                ValidationResults = results
+                ValidationResults = results,
+                MemberOrValue = obj
             };
         }
 
@@ -104,7 +99,8 @@ namespace Fur.DataValidation
             return new DataValidationResult
             {
                 IsValid = isValid,
-                ValidationResults = results
+                ValidationResults = results,
+                MemberOrValue = value
             };
         }
 
@@ -154,7 +150,8 @@ namespace Fur.DataValidation
                 return new DataValidationResult
                 {
                     IsValid = false,
-                    ValidationResults = results
+                    ValidationResults = results,
+                    MemberOrValue = value
                 };
             }
 
@@ -192,12 +189,13 @@ namespace Fur.DataValidation
             return new DataValidationResult
             {
                 IsValid = isValid ?? true,
-                ValidationResults = results
+                ValidationResults = results,
+                MemberOrValue = value
             };
         }
 
         /// <summary>
-        /// <see cref="GetValidationValidationItemMetadata"/> 缓存集合
+        /// 获取验证类型验证Item集合
         /// </summary>
         private static readonly ConcurrentDictionary<object, (string, ValidationItemMetadataAttribute)> GetValidationTypeValidationItemMetadataCached;
 

@@ -1,19 +1,8 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
+﻿using Fur;
 using Fur.DependencyInjection;
 using Fur.FriendlyException;
 using Fur.UnifyResult;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -65,12 +54,28 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             // 设置异常结果
             var exception = context.Exception;
 
-            // 处理规范化结果
-            var unifyResult = _serviceProvider.GetService<IUnifyResultProvider>();
-            context.Result = unifyResult == null ? new ContentResult { Content = exception.Message } : unifyResult.OnException(context);
+            // 解析验证异常
+            var validationFlag = "[Validation]";
+            var errorMessage = exception.Message.StartsWith(validationFlag) ? exception.Message[validationFlag.Length..] : exception.Message;
 
+            // 判断是否跳过规范化结果
+            if (UnifyResultContext.IsSkipUnifyHandler(actionDescriptor.MethodInfo, out var unifyResult))
+            {
+                context.Result = new ContentResult
+                {
+                    Content = errorMessage,
+                    StatusCode = exception.Message.StartsWith(validationFlag) ? StatusCodes.Status400BadRequest : StatusCodes.Status500InternalServerError
+                };
+            }
+            else context.Result = unifyResult.OnException(context);
+
+            // 处理验证异常，打印验证失败信息
+            if (exception.Message.StartsWith(validationFlag))
+            {
+                App.PrintToMiniProfiler("validation", "Failed", $"Exception Validation Failed:\r\n{errorMessage}", true);
+            }
             // 打印错误到 MiniProfiler 中
-            Oops.PrintToMiniProfiler(context.Exception);
+            else Oops.PrintToMiniProfiler(context.Exception);
         }
     }
 }

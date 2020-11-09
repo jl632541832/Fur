@@ -1,17 +1,4 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur.DependencyInjection;
+﻿using Fur.DependencyInjection;
 using Mapster;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using System;
@@ -74,7 +61,7 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>Task<DataTable></returns>
+        /// <returns>Task{DataTable}</returns>
         public static Task<DataTable> SqlQueryAsync(this string sql, params DbParameter[] parameters)
         {
             return GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, parameters);
@@ -86,7 +73,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<DataTable></returns>
+        /// <returns>Task{DataTable}</returns>
         public static Task<DataTable> SqlQueryAsync(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             return GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, parameters, cancellationToken: cancellationToken);
@@ -98,7 +85,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="sql">sql 语句</param>
         /// <param name="model">参数模型</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<DataTable></returns>
+        /// <returns>Task{DataTable}</returns>
         public static async Task<DataTable> SqlQueryAsync(this string sql, object model, CancellationToken cancellationToken = default)
         {
             var (dataTable, _) = await GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, model, cancellationToken: cancellationToken);
@@ -111,7 +98,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>List<T></returns>
+        /// <returns>List{T}</returns>
         public static List<T> SqlQuery<T>(this string sql, params DbParameter[] parameters)
         {
             return GetSqlDatabase(ref sql).ExecuteReader(sql, parameters).ToList<T>();
@@ -123,7 +110,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="sql">sql 语句</param>
         /// <param name="model">参数模型</param>
-        /// <returns>List<T></returns>
+        /// <returns>List{T}</returns>
         public static List<T> SqlQuery<T>(this string sql, object model)
         {
             return GetSqlDatabase(ref sql).ExecuteReader(sql, model).dataTable.ToList<T>();
@@ -135,7 +122,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>Task<List<T>></returns>
+        /// <returns>Task{List{T}}</returns>
         public static async Task<List<T>> SqlQueryAsync<T>(this string sql, params DbParameter[] parameters)
         {
             var dataTable = await GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, parameters);
@@ -149,7 +136,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<List<T>></returns>
+        /// <returns>Task{List{T}}</returns>
         public static async Task<List<T>> SqlQueryAsync<T>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             var dataTable = await GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, parameters, cancellationToken: cancellationToken);
@@ -163,7 +150,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="sql">sql 语句</param>
         /// <param name="model">参数模型</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<List<T>></returns>
+        /// <returns>Task{List{T}}</returns>
         public static async Task<List<T>> SqlQueryAsync<T>(this string sql, object model, CancellationToken cancellationToken = default)
         {
             var (dataTable, _) = await GetSqlDatabase(ref sql).ExecuteReaderAsync(sql, model, cancellationToken: cancellationToken);
@@ -197,7 +184,7 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>Task<DataSet></returns>
+        /// <returns>Task{DataSet}</returns>
         public static Task<DataSet> SqlQueriesAsync(this string sql, params DbParameter[] parameters)
         {
             return GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
@@ -209,7 +196,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<DataSet></returns>
+        /// <returns>Task{DataSet}</returns>
         public static Task<DataSet> SqlQueriesAsync(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             return GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
@@ -221,7 +208,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="sql">sql 语句</param>
         /// <param name="model">参数模型</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<DataSet></returns>
+        /// <returns>Task{DataSet}</returns>
         public static async Task<DataSet> SqlQueriesAsync(this string sql, object model, CancellationToken cancellationToken = default)
         {
             var (dataSet, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
@@ -234,7 +221,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T1">返回类型</typeparam>
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>List<T1></returns>
+        /// <returns>List{T1}</returns>
         public static List<T1> SqlQueries<T1>(this string sql, params DbParameter[] parameters)
         {
             return GetSqlDatabase(ref sql).DataAdapterFill(sql, parameters).ToList<T1>();
@@ -358,7 +345,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T1">返回类型</typeparam>
         /// <param name="sql">sql 语句</param>
         /// <param name="model">参数模型</param>
-        /// <returns>List<T1></returns>
+        /// <returns>List{T1}</returns>
         public static List<T1> SqlQueries<T1>(this string sql, object model)
         {
             return GetSqlDatabase(ref sql).DataAdapterFill(sql, model).dataSet.ToList<T1>();
@@ -482,7 +469,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T1">返回类型</typeparam>
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>Task<List<T1>></returns>
+        /// <returns>Task{List{T1}}</returns>
         public static async Task<List<T1>> SqlQueriesAsync<T1>(this string sql, params DbParameter[] parameters)
         {
             var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters);
@@ -496,7 +483,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="sql">sql 语句</param>
         /// <param name="parameters">命令参数</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<List<T1>></returns>
+        /// <returns>Task{List{T1}}</returns>
         public static async Task<List<T1>> SqlQueriesAsync<T1>(this string sql, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             var dataset = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, parameters, cancellationToken: cancellationToken);
@@ -755,7 +742,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="sql">sql 语句</param>
         /// <param name="model">参数模型</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>List<T1></returns>
+        /// <returns>List{T1}</returns>
         public static async Task<List<T1>> SqlQueriesAsync<T1>(this string sql, object model, CancellationToken cancellationToken = default)
         {
             var (dataset, _) = await GetSqlDatabase(ref sql).DataAdapterFillAsync(sql, model, cancellationToken: cancellationToken);
@@ -951,7 +938,7 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="procName">存储过程名</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>List<T></returns>
+        /// <returns>List{T}</returns>
         public static List<T> SqlProcedureQuery<T>(this string procName, params DbParameter[] parameters)
         {
             return GetSqlDatabase(ref procName).ExecuteReader(procName, parameters, CommandType.StoredProcedure).ToList<T>();
@@ -962,7 +949,7 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="procName">存储过程名</param>
         /// <param name="model">参数模型</param>
-        /// <returns>List<T></returns>
+        /// <returns>List{T}</returns>
         public static List<T> SqlProcedureQuery<T>(this string procName, object model)
         {
             return GetSqlDatabase(ref procName).ExecuteReader(procName, model, CommandType.StoredProcedure).dataTable.ToList<T>();
@@ -973,7 +960,7 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="procName">存储过程名</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>List<T></returns>
+        /// <returns>List{T}</returns>
         public static async Task<List<T>> SqlProcedureQueryAsync<T>(this string procName, params DbParameter[] parameters)
         {
             var dataTable = await GetSqlDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure);
@@ -986,7 +973,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="procName">存储过程名</param>
         /// <param name="parameters">命令参数</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>List<T></returns>
+        /// <returns>List{T}</returns>
         public static async Task<List<T>> SqlProcedureQueryAsync<T>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             var dataTable = await GetSqlDatabase(ref procName).ExecuteReaderAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
@@ -999,7 +986,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="procName">存储过程名</param>
         /// <param name="model">参数模型</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>List<T></returns>
+        /// <returns>List{T}</returns>
         public static async Task<List<T>> SqlProcedureQueryAsync<T>(this string procName, object model, CancellationToken cancellationToken = default)
         {
             var (dataTable, _) = await GetSqlDatabase(ref procName).ExecuteReaderAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
@@ -1070,7 +1057,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T1">返回类型</typeparam>
         /// <param name="procName">存储过程名</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>List<T1></returns>
+        /// <returns>List{T1}</returns>
         public static List<T1> SqlProcedureQueries<T1>(this string procName, params DbParameter[] parameters)
         {
             return GetSqlDatabase(ref procName).DataAdapterFill(procName, parameters, CommandType.StoredProcedure).ToList<T1>();
@@ -1194,7 +1181,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T1">返回类型</typeparam>
         /// <param name="procName">存储过程名</param>
         /// <param name="model">参数模型</param>
-        /// <returns>List<T1></returns>
+        /// <returns>List{T1}</returns>
         public static List<T1> SqlProcedureQueries<T1>(this string procName, object model)
         {
             return GetSqlDatabase(ref procName).DataAdapterFill(procName, model, CommandType.StoredProcedure).dataSet.ToList<T1>();
@@ -1318,7 +1305,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T1">返回类型</typeparam>
         /// <param name="procName">存储过程名</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>Task<List<T1>></returns>
+        /// <returns>Task{List{T1}}</returns>
         public static async Task<List<T1>> SqlProcedureQueriesAsync<T1>(this string procName, params DbParameter[] parameters)
         {
             var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure);
@@ -1332,7 +1319,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="procName">存储过程名</param>
         /// <param name="parameters">命令参数</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<List<T1>></returns>
+        /// <returns>Task{List{T1}}</returns>
         public static async Task<List<T1>> SqlProcedureQueriesAsync<T1>(this string procName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             var dataset = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, parameters, CommandType.StoredProcedure, cancellationToken: cancellationToken);
@@ -1591,7 +1578,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="procName">存储过程名</param>
         /// <param name="model">参数模型</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>List<T1></returns>
+        /// <returns>List{T1}</returns>
         public static async Task<List<T1>> SqlProcedureQueriesAsync<T1>(this string procName, object model, CancellationToken cancellationToken = default)
         {
             var (dataset, _) = await GetSqlDatabase(ref procName).DataAdapterFillAsync(procName, model, CommandType.StoredProcedure, cancellationToken: cancellationToken);
@@ -2386,7 +2373,7 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="funcName">函数名</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>Task<DataTable></returns>
+        /// <returns>Task{DataTable}</returns>
         public static Task<DataTable> SqlFunctionQueryAsync(this string funcName, params DbParameter[] parameters)
         {
             var database = GetSqlDatabase(ref funcName);
@@ -2400,7 +2387,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="funcName">函数名</param>
         /// <param name="parameters">命令参数</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<DataTable></returns>
+        /// <returns>Task{DataTable}</returns>
         public static Task<DataTable> SqlFunctionQueryAsync(this string funcName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             var database = GetSqlDatabase(ref funcName);
@@ -2414,7 +2401,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="funcName">函数名</param>
         /// <param name="model">参数模型</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<DataTable></returns>
+        /// <returns>Task{DataTable}</returns>
         public static async Task<DataTable> SqlFunctionQueryAsync(this string funcName, object model, CancellationToken cancellationToken = default)
         {
             var database = GetSqlDatabase(ref funcName);
@@ -2429,7 +2416,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="funcName">函数名</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>List<T></returns>
+        /// <returns>List{T}</returns>
         public static List<T> SqlFunctionQuery<T>(this string funcName, params DbParameter[] parameters)
         {
             var database = GetSqlDatabase(ref funcName);
@@ -2443,7 +2430,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="funcName">函数名</param>
         /// <param name="model">参数模型</param>
-        /// <returns>List<T></returns>
+        /// <returns>List{T}</returns>
         public static List<T> SqlFunctionQuery<T>(this string funcName, object model)
         {
             var database = GetSqlDatabase(ref funcName);
@@ -2457,7 +2444,7 @@ namespace Fur.DatabaseAccessor
         /// <typeparam name="T">返回类型</typeparam>
         /// <param name="funcName">函数名</param>
         /// <param name="parameters">命令参数</param>
-        /// <returns>Task<List<T>></returns>
+        /// <returns>Task{List{T}}</returns>
         public static async Task<List<T>> SqlFunctionQueryAsync<T>(this string funcName, params DbParameter[] parameters)
         {
             var database = GetSqlDatabase(ref funcName);
@@ -2473,7 +2460,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="funcName">函数名</param>
         /// <param name="parameters">命令参数</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<List<T>></returns>
+        /// <returns>Task{List{T}}</returns>
         public static async Task<List<T>> SqlFunctionQueryAsync<T>(this string funcName, DbParameter[] parameters, CancellationToken cancellationToken = default)
         {
             var database = GetSqlDatabase(ref funcName);
@@ -2489,7 +2476,7 @@ namespace Fur.DatabaseAccessor
         /// <param name="funcName">函数名</param>
         /// <param name="model">参数模型</param>
         /// <param name="cancellationToken">异步取消令牌</param>
-        /// <returns>Task<List<T>></returns>
+        /// <returns>Task{List{T}}</returns>
         public static async Task<List<T>> SqlFunctionQueryAsync<T>(this string funcName, object model, CancellationToken cancellationToken = default)
         {
             var database = GetSqlDatabase(ref funcName);

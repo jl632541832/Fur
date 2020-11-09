@@ -1,19 +1,8 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur.DependencyInjection;
+﻿using Fur.DependencyInjection;
 using Fur.DynamicApiController;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
+using Microsoft.AspNetCore.Mvc.Formatters;
 using System;
 using System.Linq;
 
@@ -32,16 +21,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>Mvc构建器</returns>
         public static IMvcBuilder AddDynamicApiControllers(this IMvcBuilder mvcBuilder)
         {
-            var services = mvcBuilder.Services;
-
-            var partManager = services.FirstOrDefault(s => s.ServiceType == typeof(ApplicationPartManager)).ImplementationInstance as ApplicationPartManager
-                ?? throw new InvalidOperationException($"`{nameof(AddDynamicApiControllers)}` must be invoked after `{nameof(MvcServiceCollectionExtensions.AddControllers)}`");
-
-            // 添加控制器特性提供器
-            partManager.FeatureProviders.Add(new DynamicApiControllerFeatureProvider());
-
-            // 添加配置
-            services.AddConfigurableOptions<DynamicApiControllerSettingsOptions>();
+            // 添加基础服务
+            AddBaseServices(mvcBuilder.Services);
 
             // 配置 Mvc 选项
             mvcBuilder.AddMvcOptions(options =>
@@ -53,13 +34,51 @@ namespace Microsoft.Extensions.DependencyInjection
                 //options.ReturnHttpNotAcceptable = true;
             });
 
-            // 添加丰富类型支持
-            mvcBuilder.AddNewtonsoftJson();
-
             // 添加 Xml 支持
             mvcBuilder.AddXmlDataContractSerializerFormatters();
 
             return mvcBuilder;
+        }
+
+        /// <summary>
+        /// 添加动态接口控制器服务
+        /// </summary>
+        /// <param name="services"></param>
+        /// <returns>Mvc构建器</returns>
+        public static IServiceCollection AddDynamicApiControllers(this IServiceCollection services)
+        {
+            // 添加基础服务
+            AddBaseServices(services);
+
+            services.Configure<MvcOptions>(options =>
+            {
+                // 添加应用模型转换器
+                options.Conventions.Add(new DynamicApiControllerApplicationModelConvention());
+
+                // 处理 Web API 不支持的返回格式，统一返回 406 状态码
+                //options.ReturnHttpNotAcceptable = true;
+
+                // 添加 Xml 支持
+                options.InputFormatters.Add(new XmlSerializerInputFormatter(options));
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// 添加基础服务
+        /// </summary>
+        /// <param name="services"></param>
+        private static void AddBaseServices(IServiceCollection services)
+        {
+            var partManager = services.FirstOrDefault(s => s.ServiceType == typeof(ApplicationPartManager)).ImplementationInstance as ApplicationPartManager
+                ?? throw new InvalidOperationException($"`{nameof(AddDynamicApiControllers)}` must be invoked after `{nameof(MvcServiceCollectionExtensions.AddControllers)}`");
+
+            // 添加控制器特性提供器
+            partManager.FeatureProviders.Add(new DynamicApiControllerFeatureProvider());
+
+            // 添加配置
+            services.AddConfigurableOptions<DynamicApiControllerSettingsOptions>();
         }
     }
 }

@@ -1,27 +1,14 @@
-﻿// -----------------------------------------------------------------------------
-// Fur 是 .NET 5 平台下企业应用开发最佳实践框架。
-// Copyright © 2020 Fur, Baiqian Co.,Ltd.
-//
-// 框架名称：Fur
-// 框架作者：百小僧
-// 框架版本：1.0.0-rc.final.20
-// 官方网站：https://chinadot.net
-// 源码地址：Gitee：https://gitee.com/monksoul/Fur
-// 				    Github：https://github.com/monksoul/Fur
-// 开源协议：Apache-2.0（http://www.apache.org/licenses/LICENSE-2.0）
-// -----------------------------------------------------------------------------
-
-using Fur.DependencyInjection;
+﻿using Fur.DependencyInjection;
 using Fur.UnifyResult;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.DependencyInjection;
-using Newtonsoft.Json;
 using System;
 using System.Linq;
 using System.Net.Mime;
+using System.Text.Encodings.Web;
+using System.Text.Json;
 
 namespace Fur.DataValidation
 {
@@ -103,7 +90,7 @@ namespace Fur.DataValidation
             if (context.Result == null && !modelState.IsValid)
             {
                 // 设置验证失败结果
-                SetValidateFailedResult(context, modelState);
+                SetValidateFailedResult(context, modelState, actionDescriptor);
             }
         }
 
@@ -112,19 +99,20 @@ namespace Fur.DataValidation
         /// </summary>
         /// <param name="context">动作方法执行上下文</param>
         /// <param name="modelState">模型验证状态</param>
-        private void SetValidateFailedResult(ActionExecutingContext context, ModelStateDictionary modelState)
+        /// <param name="actionDescriptor"></param>
+        private void SetValidateFailedResult(ActionExecutingContext context, ModelStateDictionary modelState, ControllerActionDescriptor actionDescriptor)
         {
             // 将验证错误信息转换成字典并序列化成 Json
             var validationResults = modelState.ToDictionary(u => u.Key, u => modelState[u.Key].Errors.Select(c => c.ErrorMessage));
-            var validateFaildMessage = JsonConvert.SerializeObject(validationResults, Formatting.Indented);
-
-            // 处理规范化结果
-            var unifyResult = _serviceProvider.GetService<IUnifyResultProvider>();
-            if (unifyResult != null)
+            var validateFaildMessage = JsonSerializer.Serialize(validationResults, new JsonSerializerOptions
             {
-                context.Result = unifyResult.OnValidateFailed(context, modelState, validationResults, validateFaildMessage);
-            }
-            else
+                Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+                WriteIndented = true,
+                PropertyNameCaseInsensitive = true
+            });
+
+            // 判断是否跳过规范化结果
+            if (UnifyResultContext.IsSkipUnifyHandler(actionDescriptor.MethodInfo, out var unifyResult))
             {
                 // 返回 400 错误
                 var result = new BadRequestObjectResult(modelState);
@@ -135,6 +123,7 @@ namespace Fur.DataValidation
 
                 context.Result = result;
             }
+            else context.Result = unifyResult.OnValidateFailed(context, modelState, validationResults, validateFaildMessage);
 
             // 打印验证失败信息
             App.PrintToMiniProfiler(MiniProfilerCategory, "Failed", $"Validation Failed:\r\n{validateFaildMessage}", true);
