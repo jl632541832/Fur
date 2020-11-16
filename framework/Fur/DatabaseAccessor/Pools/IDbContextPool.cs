@@ -24,10 +24,9 @@ namespace Fur.DatabaseAccessor
         void AddToPool(DbContext dbContext);
 
         /// <summary>
-        /// 异步保存数据库上下文
+        /// 保存数据库上下文（异步）
         /// </summary>
         /// <param name="dbContext"></param>
-        /// <returns></returns>
         Task AddToPoolAsync(DbContext dbContext);
 
         /// <summary>
@@ -44,7 +43,7 @@ namespace Fur.DatabaseAccessor
         int SavePoolNow(bool acceptAllChangesOnSuccess);
 
         /// <summary>
-        /// 保存数据库上下文池中所有已更改的数据库上下文（异步）
+        /// 保存数据库上下文池中所有已更改的数据库上下文
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
@@ -63,8 +62,16 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="skipCount"></param>
         /// <param name="transaction"></param>
+        /// <returns></returns>
+        void ShareTransaction(int skipCount, DbTransaction transaction);
+
+        /// <summary>
+        /// 设置数据库上下文共享事务
+        /// </summary>
+        /// <param name="skipCount"></param>
+        /// <param name="transaction"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task SetTransactionSharedToDbContextAsync(int skipCount, DbTransaction transaction, CancellationToken cancellationToken = default);
+        Task ShareTransactionAsync(int skipCount, DbTransaction transaction, CancellationToken cancellationToken = default);
     }
 }

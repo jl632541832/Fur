@@ -7,7 +7,7 @@
 
 <div align="center">
 
-[![star](https://gitee.com/monksoul/Fur/badge/star.svg?theme=gvp)](https://gitee.com/monksoul/Fur/stargazers) [![fork](https://gitee.com/monksoul/Fur/badge/fork.svg?theme=gvp)](https://gitee.com/monksoul/Fur/members) [![GitHub stars](https://img.shields.io/github/stars/MonkSoul/Fur?logo=github)](https://github.com/MonkSoul/Fur/stargazers) [![GitHub forks](https://img.shields.io/github/forks/MonkSoul/Fur?logo=github)](https://github.com/MonkSoul/Fur/network) [![GitHub license](https://img.shields.io/github/license/MonkSoul/Fur)](https://github.com/MonkSoul/Fur/blob/main/LICENSE) [![nuget](https://img.shields.io/badge/Nuget-1.0.0--rc.final-blue)](https://www.nuget.org/packages/Fur)
+[![star](https://gitee.com/monksoul/Fur/badge/star.svg?theme=gvp)](https://gitee.com/monksoul/Fur/stargazers) [![fork](https://gitee.com/monksoul/Fur/badge/fork.svg?theme=gvp)](https://gitee.com/monksoul/Fur/members) [![GitHub stars](https://img.shields.io/github/stars/MonkSoul/Fur?logo=github)](https://github.com/MonkSoul/Fur/stargazers) [![GitHub forks](https://img.shields.io/github/forks/MonkSoul/Fur?logo=github)](https://github.com/MonkSoul/Fur/network) [![GitHub license](https://img.shields.io/github/license/MonkSoul/Fur)](https://github.com/MonkSoul/Fur/blob/main/LICENSE) [![nuget](https://img.shields.io/badge/Nuget-1.0.x-blue)](https://www.nuget.org/packages/Fur)
 
 </div>
 
@@ -17,23 +17,14 @@
 
 </div>
 
-## ✨ 立即尝鲜 ✨
-
-`Fur` **是基于最新的 .NET 5 RC2 构建，目的是为了尽早体验新功能，对即将到来的 .NET 5 正式版做出最快的响应。** ✈
-
-所以运行 `Fur` 需要以下两个条件：
-
-- **安装最新的 v5.0.0-rc.2**：https://dotnet.microsoft.com/download/dotnet/5.0
-- **安装最新的 Visual Studio 2019 Preview**：https://visualstudio.microsoft.com/zh-hans/vs/preview/ 或使用 **Visual Studio Code** 打开 `framework` 目录
-
-<img src="https://gitee.com/monksoul/Fur/raw/main/handbook/static/img/demo.gif" />
-
+<p></p>
+<p></p>
 <p></p>
 <p></p>
 
-**[⏳ 查看 Fur 目前进度](https://gitee.com/monksoul/Fur/board)**
+## 💐 序言
 
----
+> 无私奉献不是天方夜谭，有时候，我们也可以做到。
 
 ## 🍕 名字的由来
 
@@ -87,7 +78,7 @@
 - `Docker Hub` 线上镜像
 
 ```shell
-docker run --name fur -p 5000:80 monksoul/fur:v1.0.0-rc.final.84
+docker run --name fur -p 5000:80 monksoul/fur:v1.0.0
 ```
 
 - `手动` 打包镜像
@@ -95,22 +86,22 @@ docker run --name fur -p 5000:80 monksoul/fur:v1.0.0-rc.final.84
 打开 `CMD/Shell/PowerShell` 进入 `Fur` 项目根目录打包 `Fur` 镜像：
 
 ```shell
-docker build -t fur:v1.0.0-rc.final.84 .
+docker build -t fur:v1.0.0 .
 ```
 
 打包成功后，直接 `docker run`：
 
 ```shell
-docker run --name fur -p 5000:80 fur:v1.0.0-rc.final.84
+docker run --name fur -p 5000:80 fur:v1.0.0
 ```
 
 ## 🥜 Fur 官方包
 
-| 包类型                                                                                                                                      | 名称                                    | 版本               | 描述                            |
-| ------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------------------ | ------------------------------- |
-| [![nuget](https://img.shields.io/badge/Nuget-1.0.0--rc.final-blue)](https://www.nuget.org/packages/Fur)                                     | Fur                                     | v1.0.0-rc.final.50 | Fur 总包                        |
-| [![nuget](https://img.shields.io/badge/Nuget-1.0.0--rc.final-blue)](https://www.nuget.org/packages/Fur.Extras.Authentication.JwtBearer)     | Fur.Extras.Authentication.JwtBearer     | v1.0.0-rc.final.50 | Fur Jwt 拓展包                  |
-| [![nuget](https://img.shields.io/badge/Nuget-1.0.0--rc.final-blue)](https://www.nuget.org/packages/Fur.Extras.DependencyModel.CodeAnalysis) | Fur.Extras.DependencyModel.CodeAnalysis | 1.0.0-rc.1         | Fur 程序集扫描和动态编译 拓展包 |
+| 包类型                                                                                                                            | 名称                                    | 版本   | 描述                            |
+| --------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------- | ------ | ------------------------------- |
+| [![nuget](https://img.shields.io/badge/Nuget-1.0.x-blue)](https://www.nuget.org/packages/Fur)                                     | Fur                                     | v1.0.0 | Fur 总包                        |
+| [![nuget](https://img.shields.io/badge/Nuget-1.0.x-blue)](https://www.nuget.org/packages/Fur.Extras.Authentication.JwtBearer)     | Fur.Extras.Authentication.JwtBearer     | v1.0.0 | Fur Jwt 拓展包                  |
+| [![nuget](https://img.shields.io/badge/Nuget-1.0.x-blue)](https://www.nuget.org/packages/Fur.Extras.DependencyModel.CodeAnalysis) | Fur.Extras.DependencyModel.CodeAnalysis | 1.0.0  | Fur 程序集扫描和动态编译 拓展包 |
 
 ## 🍎 框架特点
 
@@ -161,6 +152,7 @@ docker run --name fur -p 5000:80 fur:v1.0.0-rc.final.84
   - Sqlite
   - Azure Cosmos
   - MySql
+  - MariaDB
   - PostgreSQL
   - InMemoryDatabase
   - Oracle
@@ -209,6 +201,8 @@ docker run --name fur -p 5000:80 fur:v1.0.0-rc.final.84
 <a href="https://gitee.com/ZYX315" target="_blank" margin="5" style='margin:5px'><img src="https://portrait.gitee.com/uploads/avatars/user/285/856214_ZYX315_1602561602.png!avatar200" height="40"/></a>
 <a href="https://gitee.com/hdying" target="_blank" margin="5" style='margin:5px'><img src="https://portrait.gitee.com/uploads/avatars/user/660/1982081_hdying_1602561538.png!avatar200" height="40"/></a>
 <a href="https://gitee.com/vincywindy" target="_blank" margin="5" style='margin:5px'><img src="https://portrait.gitee.com/uploads/avatars/user/313/939875_vincywindy_1602575487.png!avatar200" height="40"/></a>
+<a href="https://gitee.com/Executor-Cheng" target="_blank" margin="5" style='margin:5px'><img src="https://portrait.gitee.com/uploads/avatars/user/2178/6536098_Executor-Cheng_1583720242.png!avatar200" height="40"/></a>
+<a href="https://gitee.com/luzjoyme" target="_blank" margin="5" style='margin:5px'><img src="https://portrait.gitee.com/uploads/avatars/user/1838/5516692_luzjoyme_1605065396.png!avatar200" height="40"/></a>
 
 <p></p>
 
@@ -260,6 +254,11 @@ docker run --name fur -p 5000:80 fur:v1.0.0-rc.final.84
 | 🌝 天夫李总     | **支付宝 6666**       | Fur 非常有意思，持续关注                     |
 | 😝 六尘子       | **微信红包 199**      | 公司已经使用，小小敬意                       |
 | 🤠 ccdfz        | **QQ 专属红包 200**   | 赞助一根内存条                               |
+| 🤑 邓亮灯       | **28.88**             | 感谢您的开源项目！                           |
+| 😬 天道酬勤     | **微信二维码 188**    | 小小心意                                     |
+| 🥰 却月居士     | **QQ 专属红包 100**   | 恭喜发财                                     |
+| 🤩 鲁旭         | **100**               | 感谢您的开源项目！                           |
+| 😬 散客行       | **微信二维码 666**    | 终于找到一个不错的框架                       |
 
 非常感谢您们的支持，正是因为您们，中国开源才可以越走越远，`Fur` 越走越远。
 

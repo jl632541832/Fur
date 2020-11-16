@@ -3,11 +3,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace Fur.UnifyResult
@@ -50,12 +48,7 @@ namespace Fur.UnifyResult
             if (errorMessage.StartsWith(validationFlag))
             {
                 // 处理结果
-                errorObject = JsonSerializer.Deserialize<object>(errorMessage[validationFlag.Length..], new JsonSerializerOptions
-                {
-                    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-                    WriteIndented = true,
-                    PropertyNameCaseInsensitive = true
-                });
+                errorObject = JsonSerializer.Deserialize<object>(errorMessage[validationFlag.Length..]);
 
                 errorCode = StatusCodes.Status400BadRequest;
             }
@@ -70,7 +63,7 @@ namespace Fur.UnifyResult
         /// <param name="extras"></param>
         public static void Fill(object extras)
         {
-            var items = App.ApplicationServices.GetService<IHttpContextAccessor>()?.HttpContext?.Items;
+            var items = App.GetDuplicateService<IHttpContextAccessor>()?.HttpContext?.Items;
             if (items.ContainsKey(UnifyResultExtrasKey)) items.Remove(UnifyResultExtrasKey);
             items.Add(UnifyResultExtrasKey, extras);
         }
@@ -81,7 +74,7 @@ namespace Fur.UnifyResult
         public static object Take()
         {
             object extras = null;
-            App.ApplicationServices.GetService<IHttpContextAccessor>()?.HttpContext?.Items?.TryGetValue(UnifyResultExtrasKey, out extras);
+            App.GetDuplicateService<IHttpContextAccessor>()?.HttpContext?.Items?.TryGetValue(UnifyResultExtrasKey, out extras);
             return extras;
         }
 
@@ -92,7 +85,7 @@ namespace Fur.UnifyResult
         /// <param name="value"></param>
         public static void Set(string key, object value)
         {
-            var items = App.ApplicationServices.GetService<IHttpContextAccessor>()?.HttpContext?.Items;
+            var items = App.GetDuplicateService<IHttpContextAccessor>()?.HttpContext?.Items;
             if (items.ContainsKey(key)) items.Remove(key);
             items.Add(key, value);
         }
@@ -105,7 +98,7 @@ namespace Fur.UnifyResult
         public static object Get(string key)
         {
             object value = null;
-            App.ApplicationServices.GetService<IHttpContextAccessor>()?.HttpContext?.Items?.TryGetValue(key, out value);
+            App.GetDuplicateService<IHttpContextAccessor>()?.HttpContext?.Items?.TryGetValue(key, out value);
             return value;
         }
 
@@ -121,7 +114,7 @@ namespace Fur.UnifyResult
             var isSkip = method.CustomAttributes.Any(x => typeof(NonUnifyAttribute).IsAssignableFrom(x.AttributeType) || typeof(ProducesResponseTypeAttribute).IsAssignableFrom(x.AttributeType)
                   || typeof(IApiResponseMetadataProvider).IsAssignableFrom(x.AttributeType));
 
-            unifyResult = isSkip ? null : App.GetService<IUnifyResultProvider>();
+            unifyResult = isSkip ? null : App.GetDuplicateService<IUnifyResultProvider>();
             return unifyResult == null || isSkip;
         }
 
@@ -136,7 +129,7 @@ namespace Fur.UnifyResult
             // 判断是否跳过规范化处理
             var isSkip = method.CustomAttributes.Any(x => typeof(NonUnifyAttribute).IsAssignableFrom(x.AttributeType));
 
-            unifyResult = isSkip ? null : App.GetService<IUnifyResultProvider>();
+            unifyResult = isSkip ? null : App.GetDuplicateService<IUnifyResultProvider>();
             return unifyResult == null || isSkip;
         }
 
@@ -151,7 +144,7 @@ namespace Fur.UnifyResult
             // 判断是否跳过规范化处理
             var isSkip = context.GetMetadata<NonUnifyAttribute>() != null;
 
-            unifyResult = isSkip ? null : App.GetService<IUnifyResultProvider>();
+            unifyResult = isSkip ? null : App.GetDuplicateService<IUnifyResultProvider>();
             return unifyResult == null || isSkip;
         }
     }

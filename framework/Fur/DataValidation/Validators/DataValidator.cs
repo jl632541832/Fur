@@ -17,11 +17,6 @@ namespace Fur.DataValidation
     public static class DataValidator
     {
         /// <summary>
-        /// MiniProfiler 分类名
-        /// </summary>
-        private const string MiniProfilerCategory = "http";
-
-        /// <summary>
         /// 所有验证类型
         /// </summary>
         private static readonly IEnumerable<Type> ValidationTypes;
@@ -254,7 +249,7 @@ namespace Fur.DataValidation
                 .Where(u => u.IsDefined(typeof(ValidationMessageTypeAttribute), true) && u.IsEnum).ToList();
 
             // 加载自定义验证消息类型提供器
-            var validationMessageTypeProvider = App.GetService<IValidationMessageTypeProvider>();
+            var validationMessageTypeProvider = App.GetDuplicateService<IValidationMessageTypeProvider>();
             if (validationMessageTypeProvider is { Definitions: not null }) validationMessageTypes.AddRange(validationMessageTypeProvider.Definitions);
 
             return validationMessageTypes.Distinct();

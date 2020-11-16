@@ -19,36 +19,14 @@
             应用全局配置
             </summary>
         </member>
-        <member name="P:Fur.App.Services">
-            <summary>
-            瞬时服务提供器，每次都是不一样的实例
-            </summary>
-        </member>
-        <member name="P:Fur.App.ApplicationServices">
-            <summary>
-            应用服务提供器
-            </summary>
-            <remarks>
-            通过它可以获取第三方容器注入的服务，也就是不是 asp.net core 托管的，或者自己实现 Ioc/DI 的方式
-            如采用 autofac 替换默认 IOC 容器，这样就可以通过 Application.GetAutofacRoot() 获取 Autofac容器对象，无需采用静态类手工存储该容器
-            </remarks>
-            <example>
-            <code>
-            var container = Application.GetAutofacRoot();
-            var service = container.Resolve(typeof(TService));
-            </code>
-            </example>
-        </member>
-        <member name="P:Fur.App.RequestServices">
-            <summary>
-            请求服务提供器，相当于使用构造函数注入方式
-            </summary>
-            <remarks>每一个请求一个作用域，由于基于请求，所以可能有空异常</remarks>
-            <exception cref="T:System.ArgumentNullException">空异常</exception>
-        </member>
         <member name="F:Fur.App.Configuration">
             <summary>
             全局配置选项
+            </summary>
+        </member>
+        <member name="F:Fur.App._webHostEnvironment">
+            <summary>
+            私有环境变量，避免重复解析
             </summary>
         </member>
         <member name="P:Fur.App.WebHostEnvironment">
@@ -66,40 +44,21 @@
             能够被扫描的类型
             </summary>
         </member>
-        <member name="F:Fur.App.Startups">
+        <member name="P:Fur.App.ServiceProvider">
             <summary>
-            应用所有启动配置对象
-            </summary>
-        </member>
-        <member name="M:Fur.App.#cctor">
-            <summary>
-            构造函数
+            瞬时服务提供器，每次都是不一样的实例
             </summary>
         </member>
         <member name="M:Fur.App.GetService``1">
             <summary>
-            获取瞬时服务
-            </summary>
-            <typeparam name="TService">服务</typeparam>
-            <returns></returns>
-        </member>
-        <member name="M:Fur.App.GetRequestService``1">
-            <summary>
-            获取作用域服务
+            获取请求生命周期的服务
             </summary>
             <typeparam name="TService"></typeparam>
             <returns></returns>
         </member>
         <member name="M:Fur.App.GetService(System.Type)">
             <summary>
-            获取瞬时服务
-            </summary>
-            <param name="type">类型</param>
-            <returns></returns>
-        </member>
-        <member name="M:Fur.App.GetRequestService(System.Type)">
-            <summary>
-            获取作用域服务
+            获取请求生命周期的服务
             </summary>
             <param name="type"></param>
             <returns></returns>
@@ -141,6 +100,30 @@
             <param name="state">状态</param>
             <param name="message">消息</param>
             <param name="isError">是否为警告消息</param>
+        </member>
+        <member name="M:Fur.App.#cctor">
+            <summary>
+            构造函数
+            </summary>
+        </member>
+        <member name="F:Fur.App.AppStartups">
+            <summary>
+            应用所有启动配置对象
+            </summary>
+        </member>
+        <member name="M:Fur.App.GetDuplicateService``1">
+            <summary>
+            获取副本服务
+            </summary>
+            <typeparam name="TService">服务</typeparam>
+            <returns></returns>
+        </member>
+        <member name="M:Fur.App.GetDuplicateService(System.Type)">
+            <summary>
+            获取副本服务
+            </summary>
+            <param name="type">类型</param>
+            <returns></returns>
         </member>
         <member name="M:Fur.App.GetAssemblies">
             <summary>
@@ -7982,14 +7965,14 @@
             数据库上下文池
             </summary>
         </member>
-        <member name="F:Fur.DatabaseAccessor.DbContextPool.dbContexts">
-            <summary>
-            线程安全的数据库上下文集合
-            </summary>
-        </member>
         <member name="M:Fur.DatabaseAccessor.DbContextPool.#ctor">
             <summary>
             构造函数
+            </summary>
+        </member>
+        <member name="F:Fur.DatabaseAccessor.DbContextPool.dbContexts">
+            <summary>
+            线程安全的数据库上下文集合
             </summary>
         </member>
         <member name="M:Fur.DatabaseAccessor.DbContextPool.GetDbContexts">
@@ -8038,7 +8021,15 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:Fur.DatabaseAccessor.DbContextPool.SetTransactionSharedToDbContextAsync(System.Int32,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+        <member name="M:Fur.DatabaseAccessor.DbContextPool.ShareTransaction(System.Int32,System.Data.Common.DbTransaction)">
+            <summary>
+            设置数据库上下文共享事务
+            </summary>
+            <param name="skipCount"></param>
+            <param name="transaction"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fur.DatabaseAccessor.DbContextPool.ShareTransactionAsync(System.Int32,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
             <summary>
             设置数据库上下文共享事务
             </summary>
@@ -8066,10 +8057,9 @@
         </member>
         <member name="M:Fur.DatabaseAccessor.IDbContextPool.AddToPoolAsync(Microsoft.EntityFrameworkCore.DbContext)">
             <summary>
-            异步保存数据库上下文
+            保存数据库上下文（异步）
             </summary>
             <param name="dbContext"></param>
-            <returns></returns>
         </member>
         <member name="M:Fur.DatabaseAccessor.IDbContextPool.SavePoolNow">
             <summary>
@@ -8086,7 +8076,7 @@
         </member>
         <member name="M:Fur.DatabaseAccessor.IDbContextPool.SavePoolNowAsync(System.Threading.CancellationToken)">
             <summary>
-            保存数据库上下文池中所有已更改的数据库上下文（异步）
+            保存数据库上下文池中所有已更改的数据库上下文
             </summary>
             <param name="cancellationToken"></param>
             <returns></returns>
@@ -8099,7 +8089,15 @@
             <param name="cancellationToken"></param>
             <returns></returns>
         </member>
-        <member name="M:Fur.DatabaseAccessor.IDbContextPool.SetTransactionSharedToDbContextAsync(System.Int32,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
+        <member name="M:Fur.DatabaseAccessor.IDbContextPool.ShareTransaction(System.Int32,System.Data.Common.DbTransaction)">
+            <summary>
+            设置数据库上下文共享事务
+            </summary>
+            <param name="skipCount"></param>
+            <param name="transaction"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fur.DatabaseAccessor.IDbContextPool.ShareTransactionAsync(System.Int32,System.Data.Common.DbTransaction,System.Threading.CancellationToken)">
             <summary>
             设置数据库上下文共享事务
             </summary>
@@ -9142,24 +9140,6 @@
             <param name="cancellationToken">取消异步令牌</param>
             <returns>数据库中的实体</returns>
         </member>
-        <member name="M:Fur.DatabaseAccessor.IOperableRepository`2.FromSqlRaw(System.String,System.Object[])">
-            <summary>
-            执行 Sql 返回 IQueryable
-            </summary>
-            <param name="sql">sql 语句</param>
-            <param name="parameters">命令参数</param>
-            <returns>IQueryable{TEntity}</returns>
-        </member>
-        <member name="M:Fur.DatabaseAccessor.IOperableRepository`2.FromSqlInterpolated(System.FormattableString)">
-            <summary>
-            执行 Sql 返回 IQueryable
-            </summary>
-            <remarks>
-            支持字符串内插语法
-            </remarks>
-            <param name="sql">sql 语句</param>
-            <returns>IQueryable{TEntity}</returns>
-        </member>
         <member name="T:Fur.DatabaseAccessor.IPrivateRepository">
             <summary>
             仓储依赖空接口
@@ -9809,6 +9789,24 @@
             <param name="ignoreQueryFilters">是否忽略查询过滤器</param>
             <param name="cancellationToken">异步取消令牌</param>
             <returns>List{TEntity}</returns>
+        </member>
+        <member name="M:Fur.DatabaseAccessor.IReadableRepository`2.FromSqlRaw(System.String,System.Object[])">
+            <summary>
+            执行 Sql 返回 IQueryable
+            </summary>
+            <param name="sql">sql 语句</param>
+            <param name="parameters">命令参数</param>
+            <returns>IQueryable{TEntity}</returns>
+        </member>
+        <member name="M:Fur.DatabaseAccessor.IReadableRepository`2.FromSqlInterpolated(System.FormattableString)">
+            <summary>
+            执行 Sql 返回 IQueryable
+            </summary>
+            <remarks>
+            支持字符串内插语法
+            </remarks>
+            <param name="sql">sql 语句</param>
+            <returns>IQueryable{TEntity}</returns>
         </member>
         <member name="T:Fur.DatabaseAccessor.ISqlExecutableRepository">
             <summary>
@@ -12797,14 +12795,14 @@
             </summary>
             <typeparam name="TEntity">实体类型</typeparam>
         </member>
-        <member name="M:Fur.DatabaseAccessor.EFCoreRepository`1.#ctor(System.Func{System.Type,Fur.DependencyInjection.IScoped,Microsoft.EntityFrameworkCore.DbContext},Fur.DatabaseAccessor.IDbContextPool,Fur.DatabaseAccessor.IRepository,System.IServiceProvider)">
+        <member name="M:Fur.DatabaseAccessor.EFCoreRepository`1.#ctor(System.Func{System.Type,Fur.DependencyInjection.IScoped,Microsoft.EntityFrameworkCore.DbContext},Fur.DatabaseAccessor.IRepository,System.IServiceProvider,Fur.DatabaseAccessor.IDbContextPool)">
             <summary>
             构造函数
             </summary>
             <param name="dbContextResolve">数据库上下文解析器</param>
-            <param name="dbContextPool">数据库上下文池</param>
             <param name="repository">非泛型仓储</param>
             <param name="serviceProvider">服务提供器</param>
+            <param name="dbContextPool"></param>
         </member>
         <member name="T:Fur.DatabaseAccessor.EFCoreRepository">
             <summary>
@@ -12898,14 +12896,14 @@
             数据库上下文池
             </summary>
         </member>
-        <member name="M:Fur.DatabaseAccessor.EFCoreRepository`2.#ctor(System.Func{System.Type,Fur.DependencyInjection.IScoped,Microsoft.EntityFrameworkCore.DbContext},Fur.DatabaseAccessor.IDbContextPool,Fur.DatabaseAccessor.IRepository,System.IServiceProvider)">
+        <member name="M:Fur.DatabaseAccessor.EFCoreRepository`2.#ctor(System.Func{System.Type,Fur.DependencyInjection.IScoped,Microsoft.EntityFrameworkCore.DbContext},Fur.DatabaseAccessor.IRepository,System.IServiceProvider,Fur.DatabaseAccessor.IDbContextPool)">
             <summary>
             构造函数
             </summary>
             <param name="dbContextResolve">数据库上下文解析器</param>
-            <param name="dbContextPool">数据库上下文池</param>
             <param name="repository">非泛型仓储</param>
             <param name="serviceProvider">服务提供器</param>
+            <param name="dbContextPool"></param>
         </member>
         <member name="P:Fur.DatabaseAccessor.EFCoreRepository`2.DbContext">
             <summary>
@@ -14265,24 +14263,6 @@
             <param name="cancellationToken">取消异步令牌</param>
             <returns>数据库中的实体</returns>
         </member>
-        <member name="M:Fur.DatabaseAccessor.EFCoreRepository`2.FromSqlRaw(System.String,System.Object[])">
-            <summary>
-            执行 Sql 返回 IQueryable
-            </summary>
-            <param name="sql">sql 语句</param>
-            <param name="parameters">命令参数</param>
-            <returns>IQueryable</returns>
-        </member>
-        <member name="M:Fur.DatabaseAccessor.EFCoreRepository`2.FromSqlInterpolated(System.FormattableString)">
-            <summary>
-            执行 Sql 返回 IQueryable
-            </summary>
-            <remarks>
-            支持字符串内插语法
-            </remarks>
-            <param name="sql">sql 语句</param>
-            <returns>IQueryable</returns>
-        </member>
         <member name="M:Fur.DatabaseAccessor.EFCoreRepository`2.Find(System.Object)">
             <summary>
             根据键查询一条记录
@@ -14914,6 +14894,24 @@
             <param name="ignoreQueryFilters">是否忽略查询过滤器</param>
             <param name="cancellationToken">异步取消令牌</param>
             <returns>List{TEntity}</returns>
+        </member>
+        <member name="M:Fur.DatabaseAccessor.EFCoreRepository`2.FromSqlRaw(System.String,System.Object[])">
+            <summary>
+            执行 Sql 返回 IQueryable
+            </summary>
+            <param name="sql">sql 语句</param>
+            <param name="parameters">命令参数</param>
+            <returns>IQueryable</returns>
+        </member>
+        <member name="M:Fur.DatabaseAccessor.EFCoreRepository`2.FromSqlInterpolated(System.FormattableString)">
+            <summary>
+            执行 Sql 返回 IQueryable
+            </summary>
+            <remarks>
+            支持字符串内插语法
+            </remarks>
+            <param name="sql">sql 语句</param>
+            <returns>IQueryable</returns>
         </member>
         <member name="M:Fur.DatabaseAccessor.EFCoreRepository`2.Update(`0)">
             <summary>
@@ -17884,12 +17882,11 @@
             服务提供器
             </summary>
         </member>
-        <member name="M:Fur.DatabaseAccessor.SqlRepository`1.#ctor(System.Func{System.Type,Fur.DependencyInjection.IScoped,Microsoft.EntityFrameworkCore.DbContext},Fur.DatabaseAccessor.IDbContextPool,System.IServiceProvider)">
+        <member name="M:Fur.DatabaseAccessor.SqlRepository`1.#ctor(System.Func{System.Type,Fur.DependencyInjection.IScoped,Microsoft.EntityFrameworkCore.DbContext},System.IServiceProvider)">
             <summary>
             构造函数
             </summary>
             <param name="dbContextResolve">数据库上下文解析器</param>
-            <param name="dbContextPool">数据库上下文池</param>
             <param name="serviceProvider">服务提供器</param>
         </member>
         <member name="P:Fur.DatabaseAccessor.SqlRepository`1.Database">
@@ -18697,12 +18694,11 @@
             Sql 操作仓储实现
             </summary>
         </member>
-        <member name="M:Fur.DatabaseAccessor.SqlRepository.#ctor(System.Func{System.Type,Fur.DependencyInjection.IScoped,Microsoft.EntityFrameworkCore.DbContext},Fur.DatabaseAccessor.IDbContextPool,System.IServiceProvider)">
+        <member name="M:Fur.DatabaseAccessor.SqlRepository.#ctor(System.Func{System.Type,Fur.DependencyInjection.IScoped,Microsoft.EntityFrameworkCore.DbContext},System.IServiceProvider)">
             <summary>
             构造函数
             </summary>
             <param name="dbContextResolve">数据库上下文解析器</param>
-            <param name="dbContextPool">数据库上下文池</param>
             <param name="serviceProvider">服务提供器</param>
         </member>
         <member name="T:Fur.DatabaseAccessor.UnitOfWorkAttribute">
@@ -18743,17 +18739,6 @@
             MiniProfiler 分类名
             </summary>
         </member>
-        <member name="F:Fur.DatabaseAccessor.UnitOfWorkFilter._dbContextPool">
-            <summary>
-            数据库上下文池
-            </summary>
-        </member>
-        <member name="M:Fur.DatabaseAccessor.UnitOfWorkFilter.#ctor(Fur.DatabaseAccessor.IDbContextPool)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="dbContextPool">数据库上下文池</param>
-        </member>
         <member name="F:Fur.DatabaseAccessor.UnitOfWorkFilter.FilterOrder">
             <summary>
             过滤器排序
@@ -18763,6 +18748,17 @@
             <summary>
             排序属性
             </summary>
+        </member>
+        <member name="F:Fur.DatabaseAccessor.UnitOfWorkFilter._dbContextPool">
+            <summary>
+            数据库上下文池
+            </summary>
+        </member>
+        <member name="M:Fur.DatabaseAccessor.UnitOfWorkFilter.#ctor(Fur.DatabaseAccessor.IDbContextPool)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="dbContextPool"></param>
         </member>
         <member name="M:Fur.DatabaseAccessor.UnitOfWorkFilter.OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext,Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate)">
             <summary>
@@ -18832,6 +18828,28 @@
             MD5 加密
             </summary>
             <param name="text">加密文本</param>
+            <returns></returns>
+        </member>
+        <member name="T:Fur.DataEncryption.MD5Encryption.MD5Instances">
+            <summary>
+            创建MD5实例
+            </summary>
+        </member>
+        <member name="F:Fur.DataEncryption.MD5Encryption.MD5Instances.instance">
+            <summary>
+            线程静态变量
+            </summary>
+        </member>
+        <member name="P:Fur.DataEncryption.MD5Encryption.MD5Instances.Instance">
+            <summary>
+            MD5实例
+            </summary>
+        </member>
+        <member name="M:Fur.DataEncryption.MD5Encryption.ByteToString(System.Byte[])">
+            <summary>
+            重写ToString方法
+            </summary>
+            <param name="bytes"></param>
             <returns></returns>
         </member>
         <member name="T:Fur.DataValidation.ValidationItemMetadataAttribute">
@@ -19145,17 +19163,6 @@
             MiniProfiler 分类名
             </summary>
         </member>
-        <member name="F:Fur.DataValidation.DataValidationFilter._serviceProvider">
-            <summary>
-            服务提供器
-            </summary>
-        </member>
-        <member name="M:Fur.DataValidation.DataValidationFilter.#ctor(System.IServiceProvider)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="serviceProvider">服务提供器</param>
-        </member>
         <member name="F:Fur.DataValidation.DataValidationFilter.FilterOrder">
             <summary>
             过滤器排序
@@ -19234,11 +19241,6 @@
         <member name="T:Fur.DataValidation.DataValidator">
             <summary>
             数据验证器
-            </summary>
-        </member>
-        <member name="F:Fur.DataValidation.DataValidator.MiniProfilerCategory">
-            <summary>
-            MiniProfiler 分类名
             </summary>
         </member>
         <member name="F:Fur.DataValidation.DataValidator.ValidationTypes">
@@ -19930,7 +19932,7 @@
             异常拓展
             </summary>
         </member>
-        <member name="M:Fur.FriendlyException.ExceptionExtensions.ErrorCode(System.Exception,System.Int32)">
+        <member name="M:Fur.FriendlyException.ExceptionExtensions.StatusCode(System.Exception,System.Int32)">
             <summary>
             设置异常状态码
             </summary>
@@ -20164,6 +20166,72 @@
             <summary>
             Fur 框架底层启动项配置
             </summary>
+        </member>
+        <member name="T:Fur.JsonConverters.DateTimeJsonConverter">
+            <summary>
+            DateTime 类型序列化
+            </summary>
+        </member>
+        <member name="M:Fur.JsonConverters.DateTimeJsonConverter.#ctor(System.String)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="format"></param>
+        </member>
+        <member name="P:Fur.JsonConverters.DateTimeJsonConverter.Format">
+            <summary>
+            时间格式化格式
+            </summary>
+        </member>
+        <member name="M:Fur.JsonConverters.DateTimeJsonConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            反序列化
+            </summary>
+            <param name="reader"></param>
+            <param name="typeToConvert"></param>
+            <param name="options"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fur.JsonConverters.DateTimeJsonConverter.Write(System.Text.Json.Utf8JsonWriter,System.DateTime,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            序列化
+            </summary>
+            <param name="writer"></param>
+            <param name="value"></param>
+            <param name="options"></param>
+        </member>
+        <member name="T:Fur.JsonConverters.DateTimeOffsetJsonConverter">
+            <summary>
+            DateTimeOffset 类型序列化
+            </summary>
+        </member>
+        <member name="M:Fur.JsonConverters.DateTimeOffsetJsonConverter.#ctor(System.String)">
+            <summary>
+            构造函数
+            </summary>
+            <param name="format"></param>
+        </member>
+        <member name="P:Fur.JsonConverters.DateTimeOffsetJsonConverter.Format">
+            <summary>
+            时间格式化格式
+            </summary>
+        </member>
+        <member name="M:Fur.JsonConverters.DateTimeOffsetJsonConverter.Read(System.Text.Json.Utf8JsonReader@,System.Type,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            反序列化
+            </summary>
+            <param name="reader"></param>
+            <param name="typeToConvert"></param>
+            <param name="options"></param>
+            <returns></returns>
+        </member>
+        <member name="M:Fur.JsonConverters.DateTimeOffsetJsonConverter.Write(System.Text.Json.Utf8JsonWriter,System.DateTimeOffset,System.Text.Json.JsonSerializerOptions)">
+            <summary>
+            序列化
+            </summary>
+            <param name="writer"></param>
+            <param name="value"></param>
+            <param name="options"></param>
         </member>
         <member name="T:Fur.LinqBuilder.LinqExpression">
             <summary>
@@ -20907,17 +20975,6 @@
             规范化结构（请求成功）过滤器
             </summary>
         </member>
-        <member name="F:Fur.UnifyResult.SuccessUnifyResultFilter._serviceProvider">
-            <summary>
-            服务提供器
-            </summary>
-        </member>
-        <member name="M:Fur.UnifyResult.SuccessUnifyResultFilter.#ctor(System.IServiceProvider)">
-            <summary>
-            构造函数
-            </summary>
-            <param name="serviceProvider">服务提供器</param>
-        </member>
         <member name="F:Fur.UnifyResult.SuccessUnifyResultFilter.FilterOrder">
             <summary>
             过滤器排序
@@ -20946,17 +21003,11 @@
             请求委托
             </summary>
         </member>
-        <member name="F:Fur.UnifyResult.UnifyResultStatusCodesMiddleware._serviceProvider">
-            <summary>
-            服务提供器
-            </summary>
-        </member>
-        <member name="M:Fur.UnifyResult.UnifyResultStatusCodesMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate,System.IServiceProvider)">
+        <member name="M:Fur.UnifyResult.UnifyResultStatusCodesMiddleware.#ctor(Microsoft.AspNetCore.Http.RequestDelegate)">
             <summary>
             构造函数
             </summary>
             <param name="next"></param>
-            <param name="serviceProvider"></param>
         </member>
         <member name="M:Fur.UnifyResult.UnifyResultStatusCodesMiddleware.InvokeAsync(Microsoft.AspNetCore.Http.HttpContext)">
             <summary>
@@ -22511,6 +22562,13 @@
             <param name="providerName">数据库提供器</param>
             <returns></returns>
         </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.DatabaseProviderServiceCollectionExtensions.ReadProviderInfo(System.String)">
+            <summary>
+            解析数据库提供器信息
+            </summary>
+            <param name="providerName"></param>
+            <returns></returns>
+        </member>
         <member name="T:Microsoft.Extensions.DependencyInjection.MiniProfilerServiceCollectionExtensions">
             <summary>
             MiniProfiler 服务拓展类
@@ -22528,38 +22586,42 @@
             友好异常服务拓展类
             </summary>
         </member>
-        <member name="M:Microsoft.Extensions.DependencyInjection.DataValidationServiceCollectionExtensions.AddDataValidation``1(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Boolean)">
+        <member name="M:Microsoft.Extensions.DependencyInjection.DataValidationServiceCollectionExtensions.AddDataValidation``1(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Boolean,System.Boolean)">
             <summary>
             添加全局数据验证
             </summary>
             <typeparam name="TValidationMessageTypeProvider">验证类型消息提供器</typeparam>
             <param name="mvcBuilder"></param>
             <param name="enabledGlobalDataValidationFilter">启用全局验证过滤器</param>
+            <param name="suppressImplicitRequiredAttributeForNonNullableReferenceTypes">禁止C# 8.0 验证非可空引用类型</param>
             <returns></returns>
         </member>
-        <member name="M:Microsoft.Extensions.DependencyInjection.DataValidationServiceCollectionExtensions.AddDataValidation``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Boolean)">
+        <member name="M:Microsoft.Extensions.DependencyInjection.DataValidationServiceCollectionExtensions.AddDataValidation``1(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Boolean,System.Boolean)">
             <summary>
             添加全局数据验证
             </summary>
             <typeparam name="TValidationMessageTypeProvider">验证类型消息提供器</typeparam>
             <param name="services"></param>
             <param name="enabledGlobalDataValidationFilter">启用全局验证过滤器</param>
+            <param name="suppressImplicitRequiredAttributeForNonNullableReferenceTypes">禁止C# 8.0 验证非可空引用类型</param>
             <returns></returns>
         </member>
-        <member name="M:Microsoft.Extensions.DependencyInjection.DataValidationServiceCollectionExtensions.AddDataValidation(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Boolean)">
+        <member name="M:Microsoft.Extensions.DependencyInjection.DataValidationServiceCollectionExtensions.AddDataValidation(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.Boolean,System.Boolean)">
             <summary>
             添加全局数据验证
             </summary>
             <param name="mvcBuilder"></param>
             <param name="enabledGlobalDataValidationFilter">启用全局验证过滤器</param>
+            <param name="suppressImplicitRequiredAttributeForNonNullableReferenceTypes">禁止C# 8.0 验证非可空引用类型</param>
             <returns></returns>
         </member>
-        <member name="M:Microsoft.Extensions.DependencyInjection.DataValidationServiceCollectionExtensions.AddDataValidation(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Boolean)">
+        <member name="M:Microsoft.Extensions.DependencyInjection.DataValidationServiceCollectionExtensions.AddDataValidation(Microsoft.Extensions.DependencyInjection.IServiceCollection,System.Boolean,System.Boolean)">
             <summary>
             添加全局数据验证
             </summary>
             <param name="services"></param>
             <param name="enabledGlobalDataValidationFilter">启用全局验证过滤器</param>
+            <param name="suppressImplicitRequiredAttributeForNonNullableReferenceTypes">禁止C# 8.0 验证非可空引用类型</param>
             <returns></returns>
         </member>
         <member name="T:Microsoft.Extensions.DependencyInjection.DependencyInjectionServiceCollectionExtensions">
@@ -22753,6 +22815,12 @@
             </summary>
             <param name="services"></param>
         </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.DynamicApiControllerServiceCollectionExtensions.ConfigureMvcBuilder(Microsoft.AspNetCore.Mvc.MvcOptions)">
+            <summary>
+            配置 Mvc 构建器
+            </summary>
+            <param name="options"></param>
+        </member>
         <member name="T:Microsoft.Extensions.DependencyInjection.FriendlyExceptionServiceCollectionExtensions">
             <summary>
             友好异常服务拓展类
@@ -22792,17 +22860,38 @@
             <param name="enabledGlobalExceptionFilter">是否启用全局异常过滤器</param>
             <returns></returns>
         </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.FriendlyExceptionServiceCollectionExtensions.AddBaseConfigure(Microsoft.Extensions.DependencyInjection.IServiceCollection)">
+            <summary>
+            新增基础配置
+            </summary>
+            <param name="services"></param>
+        </member>
         <member name="T:Microsoft.Extensions.DependencyInjection.MvcBuilderServiceCollectionExtensions">
             <summary>
             Mvc 拓展类
             </summary>
         </member>
-        <member name="M:Microsoft.Extensions.DependencyInjection.MvcBuilderServiceCollectionExtensions.AddJsonSerializerPascalPropertyNaming(Microsoft.Extensions.DependencyInjection.IMvcBuilder)">
+        <member name="M:Microsoft.Extensions.DependencyInjection.MvcBuilderServiceCollectionExtensions.AddBaseJsonOptions(Microsoft.Extensions.DependencyInjection.IMvcBuilder)">
             <summary>
             添加 JsonSerializer 序列化
             </summary>
             <param name="mvcBuilder">Mvc构建器</param>
             <returns>Mvc构建器</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.MvcBuilderServiceCollectionExtensions.AddJsonSerializerPascalPropertyNaming(Microsoft.Extensions.DependencyInjection.IMvcBuilder)">
+            <summary>
+            配置 Json 序列化属性名大写
+            </summary>
+            <param name="mvcBuilder">Mvc构建器</param>
+            <returns>Mvc构建器</returns>
+        </member>
+        <member name="M:Microsoft.Extensions.DependencyInjection.MvcBuilderServiceCollectionExtensions.AddDateTimeJsonConverter(Microsoft.Extensions.DependencyInjection.IMvcBuilder,System.String)">
+            <summary>
+            添加时间格式化
+            </summary>
+            <param name="mvcBuilder"></param>
+            <param name="format"></param>
+            <returns></returns>
         </member>
         <member name="T:Microsoft.Extensions.DependencyInjection.ObjectMapperServiceCollectionExtensions">
             <summary>
@@ -22896,13 +22985,6 @@
             <param name="hostBuilder">Web主机构建器</param>
             <param name="assemblyName">外部程序集名称</param>
             <returns>IWebHostBuilder</returns>
-        </member>
-        <member name="M:Microsoft.Extensions.Hosting.HostBuilderExtensions.Inject(Microsoft.Extensions.Hosting.IHostBuilder)">
-            <summary>
-            非 Web 主机注入
-            </summary>
-            <param name="hostBuilder"></param>
-            <returns></returns>
         </member>
         <member name="T:Microsoft.Extensions.Caching.Distributed.DistributedCacheExtensions">
             <summary>

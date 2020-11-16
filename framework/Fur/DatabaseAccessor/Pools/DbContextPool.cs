@@ -1,7 +1,7 @@
 ﻿using Fur.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Concurrent;
-using System.Data;
 using System.Data.Common;
 using System.Linq;
 using System.Threading;
@@ -13,13 +13,8 @@ namespace Fur.DatabaseAccessor
     /// 数据库上下文池
     /// </summary>
     [SkipScan]
-    public sealed class DbContextPool : IDbContextPool
+    public class DbContextPool : IDbContextPool
     {
-        /// <summary>
-        /// 线程安全的数据库上下文集合
-        /// </summary>
-        private readonly ConcurrentBag<DbContext> dbContexts;
-
         /// <summary>
         /// 构造函数
         /// </summary>
@@ -27,6 +22,11 @@ namespace Fur.DatabaseAccessor
         {
             dbContexts = new ConcurrentBag<DbContext>();
         }
+
+        /// <summary>
+        /// 线程安全的数据库上下文集合
+        /// </summary>
+        private readonly ConcurrentBag<DbContext> dbContexts;
 
         /// <summary>
         /// 获取所有数据库上下文
@@ -68,7 +68,7 @@ namespace Fur.DatabaseAccessor
         {
             // 查找所有已改变的数据库上下文并保存更改
             return dbContexts
-                .Where(u => u.ChangeTracker.HasChanges())
+                .Where(u => u != null && u.ChangeTracker.HasChanges())
                 .Select(u => u.SaveChanges()).Count();
         }
 
@@ -81,7 +81,7 @@ namespace Fur.DatabaseAccessor
         {
             // 查找所有已改变的数据库上下文并保存更改
             return dbContexts
-                .Where(u => u.ChangeTracker.HasChanges())
+                .Where(u => u != null && u.ChangeTracker.HasChanges())
                 .Select(u => u.SaveChanges(acceptAllChangesOnSuccess)).Count();
         }
 
@@ -94,7 +94,7 @@ namespace Fur.DatabaseAccessor
         {
             // 查找所有已改变的数据库上下文并保存更改
             var tasks = dbContexts
-                .Where(u => u.ChangeTracker.HasChanges())
+                .Where(u => u != null && u.ChangeTracker.HasChanges())
                 .Select(u => u.SaveChangesAsync(cancellationToken));
 
             // 等待所有异步完成
@@ -112,7 +112,7 @@ namespace Fur.DatabaseAccessor
         {
             // 查找所有已改变的数据库上下文并保存更改
             var tasks = dbContexts
-                .Where(u => u.ChangeTracker.HasChanges())
+                .Where(u => u != null && u.ChangeTracker.HasChanges())
                 .Select(u => u.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken));
 
             // 等待所有异步完成
@@ -125,12 +125,28 @@ namespace Fur.DatabaseAccessor
         /// </summary>
         /// <param name="skipCount"></param>
         /// <param name="transaction"></param>
+        /// <returns></returns>
+        public void ShareTransaction(int skipCount, DbTransaction transaction)
+        {
+            // 跳过第一个数据库上下文并设置贡献事务
+            _ = dbContexts
+                   .Where(u => u != null)
+                   .Skip(skipCount)
+                   .Select(u => u.Database.UseTransaction(transaction));
+        }
+
+        /// <summary>
+        /// 设置数据库上下文共享事务
+        /// </summary>
+        /// <param name="skipCount"></param>
+        /// <param name="transaction"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public async Task SetTransactionSharedToDbContextAsync(int skipCount, DbTransaction transaction, CancellationToken cancellationToken = default)
+        public async Task ShareTransactionAsync(int skipCount, DbTransaction transaction, CancellationToken cancellationToken = default)
         {
             // 跳过第一个数据库上下文并设置贡献事务
             var tasks = dbContexts
+                .Where(u => u != null)
                 .Skip(skipCount)
                 .Select(u => u.Database.UseTransactionAsync(transaction, cancellationToken));
 

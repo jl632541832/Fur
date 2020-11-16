@@ -19,20 +19,6 @@ namespace Fur.DatabaseAccessor
         private const string MiniProfilerCategory = "transaction";
 
         /// <summary>
-        /// 数据库上下文池
-        /// </summary>
-        private readonly IDbContextPool _dbContextPool;
-
-        /// <summary>
-        /// 构造函数
-        /// </summary>
-        /// <param name="dbContextPool">数据库上下文池</param>
-        public UnitOfWorkFilter(IDbContextPool dbContextPool)
-        {
-            _dbContextPool = dbContextPool;
-        }
-
-        /// <summary>
         /// 过滤器排序
         /// </summary>
         internal const int FilterOrder = 9999;
@@ -41,6 +27,20 @@ namespace Fur.DatabaseAccessor
         /// 排序属性
         /// </summary>
         public int Order => FilterOrder;
+
+        /// <summary>
+        /// 数据库上下文池
+        /// </summary>
+        private readonly IDbContextPool _dbContextPool;
+
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="dbContextPool"></param>
+        public UnitOfWorkFilter(IDbContextPool dbContextPool)
+        {
+            _dbContextPool = dbContextPool;
+        }
 
         /// <summary>
         /// 拦截请求
@@ -61,7 +61,7 @@ namespace Fur.DatabaseAccessor
                 var resultContext = await next();
 
                 // 判断是否异常
-                if (resultContext.Exception == null) await _dbContextPool.SavePoolNowAsync();
+                if (resultContext.Exception == null) _dbContextPool.SavePoolNow();
             }
             else
             {
@@ -77,18 +77,17 @@ namespace Fur.DatabaseAccessor
                     var firstDbContext = dbContexts.First();
 
                     // 开启事务
-                    dbContextTransaction = await firstDbContext.Database.BeginTransactionAsync();
-                    await _dbContextPool.SetTransactionSharedToDbContextAsync(1, dbContextTransaction.GetDbTransaction());
+                    dbContextTransaction = firstDbContext.Database.BeginTransaction();
+                    _dbContextPool.ShareTransaction(1, dbContextTransaction.GetDbTransaction());
                 }
                 // 创建临时数据库上下文
                 else
                 {
                     var newDbContext = Db.GetRequestDbContext(Penetrates.DbContextWithLocatorCached.Keys.First());
-                    await _dbContextPool.AddToPoolAsync(newDbContext);
 
                     // 开启事务
-                    dbContextTransaction = await newDbContext.Database.BeginTransactionAsync();
-                    await _dbContextPool.SetTransactionSharedToDbContextAsync(1, dbContextTransaction.GetDbTransaction());
+                    dbContextTransaction = newDbContext.Database.BeginTransaction();
+                    _dbContextPool.ShareTransaction(1, dbContextTransaction.GetDbTransaction());
                 }
 
                 // 调用方法
@@ -101,10 +100,10 @@ namespace Fur.DatabaseAccessor
                     try
                     {
                         // 将所有数据库上下文修改 SaveChanges();
-                        var hasChangesCount = await _dbContextPool.SavePoolNowAsync();
+                        var hasChangesCount = _dbContextPool.SavePoolNow();
 
                         // 提交共享事务
-                        await dbContextTransaction.CommitAsync();
+                        dbContextTransaction?.Commit();
 
                         // 打印事务提交消息
                         App.PrintToMiniProfiler(MiniProfilerCategory, "Completed", $"Transaction Completed! Has {hasChangesCount} DbContext Changes.");
@@ -112,7 +111,7 @@ namespace Fur.DatabaseAccessor
                     catch
                     {
                         // 回滚事务
-                        await dbContextTransaction.RollbackAsync();
+                        dbContextTransaction?.Rollback();
 
                         // 打印事务回滚消息
                         App.PrintToMiniProfiler(MiniProfilerCategory, "Rollback", isError: true);
@@ -121,19 +120,18 @@ namespace Fur.DatabaseAccessor
                     }
                     finally
                     {
-                        await dbContextTransaction.DisposeAsync();
+                        dbContextTransaction?.Dispose();
                     }
                 }
                 else
                 {
                     // 回滚事务
-                    await dbContextTransaction.RollbackAsync();
+                    dbContextTransaction?.Rollback();
+                    dbContextTransaction?.Dispose();
 
                     // 打印事务回滚消息
                     App.PrintToMiniProfiler(MiniProfilerCategory, "Rollback", isError: true);
                 }
-
-                await dbContextTransaction.DisposeAsync();
             }
         }
     }
