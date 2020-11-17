@@ -38,9 +38,9 @@ namespace Fur.DynamicApiController
         /// </summary>
         public DynamicApiControllerApplicationModelConvention()
         {
-            _dynamicApiControllerSettings = App.GetOptions<DynamicApiControllerSettingsOptions>();
+            _dynamicApiControllerSettings = App.GetDuplicateOptions<DynamicApiControllerSettingsOptions>();
             _nameVersionRegex = new Regex(@"V(?<version>[0-9_]+$)");
-            _enabledUnifyResult = App.GetDuplicateService<IUnifyResultProvider>() != null;
+            _enabledUnifyResult = App.GetService<IUnifyResultProvider>() != null;
         }
 
         /// <summary>
@@ -305,7 +305,7 @@ namespace Fur.DynamicApiController
 
             // 拼接控制器路由模板
             var controllerStartTemplate = parameterRouteTemplate.ControllerStartTemplates.Count == 0 ? null : string.Join("/", parameterRouteTemplate.ControllerStartTemplates);
-            var controllerEndTemplate = parameterRouteTemplate.ControllerStartTemplates.Count == 0 ? null : string.Join("/", parameterRouteTemplate.ControllerEndTemplates);
+            var controllerEndTemplate = parameterRouteTemplate.ControllerEndTemplates.Count == 0 ? null : string.Join("/", parameterRouteTemplate.ControllerEndTemplates);
             var template = $"{(string.IsNullOrEmpty(routePrefix) ? null : $"{routePrefix}/")}{(string.IsNullOrEmpty(module) ? null : $"{module}/")}{controllerStartTemplate}/[controller]/{controllerEndTemplate}";
 
             return template;
